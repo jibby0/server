@@ -7,10 +7,14 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
       - /etc/letsencrypt:/etc/nginx/certs:ro
+      - /etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /usr/share/nginx/html
       - ./max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
       - ./htpasswd:/etc/nginx/htpasswd
+    labels:
+        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: ""
     environment:
       - DEFAULT_HOST=jossh.us
     restart: always
@@ -166,6 +170,25 @@ services:
       - VIRTUAL_HOST=netdata.jossh.us
       - LETSENCRYPT_HOST=netdata.jossh.us
       - VIRTUAL_PORT=19999
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    restart: always
+
+  quassel-webserver:
+    image: bodsch/docker-quassel-web
+    expose:
+      - "64080"
+    ports:
+        - "8080:64080"
+    links:
+      - quassel
+    environment:
+      - QUASSEL_HOST=quassel
+      - QUASSEL_PORT=4242
+      - FORCE_DEFAULT=true
+      - WEBSERVER_MODE=http
+      - VIRTUAL_HOST=quassel.jossh.us
+      - LETSENCRYPT_HOST=quassel.jossh.us
+      - VIRTUAL_PORT=64080
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     restart: always
 
