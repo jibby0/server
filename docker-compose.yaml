@@ -192,6 +192,21 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     restart: always
 
+  selfoss:
+    image: jenserat/selfoss
+    expose:
+      - "80"
+    links:
+      - postgres
+    volumes:
+      - ${CONTAINERS_DIR}/selfoss:/var/www/html/data
+    environment:
+      - VIRTUAL_HOST=selfoss.jossh.us
+      - LETSENCRYPT_HOST=selfoss.jossh.us
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    restart: always
+
   # Currently unused container configs:
 
   #znc:
