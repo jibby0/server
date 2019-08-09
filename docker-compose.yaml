@@ -1,71 +1,74 @@
-version: '2'
+version: '3'
 
 services:
   nginx-proxy:
     image: jwilder/nginx-proxy
+    # My internet-facing load balancer (CloudFlare) sits on 80 and 443. Therefore,
+    # I let it handle all HTTPS concerns.
+    #
+    # If this is internet-facing, enable SSL in nginx-proxy
+    # and forward both 80 and 443 directly.
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
     volumes:
-      - ${CONTAINERS_DIR}/certs:/etc/nginx/certs:ro
-      - /etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /usr/share/nginx/html
-      - ./max_body_size.conf:/etc/nginx/conf.d/max_body_size.conf:ro
+      # Helps with stability of large uploads
+      - ./conf.d/proxy_timeout.conf:/etc/nginx/conf.d/proxy_timeout.conf:ro
+      - ./conf.d/real_ip.conf:/etc/nginx/conf.d/real_ip.conf:ro
       - ./htpasswd:/etc/nginx/htpasswd
-    labels:
-        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: ""
     environment:
-      - DEFAULT_HOST=jossh.us
+      - DEFAULT_HOST=jibby.org
     restart: always
 
-  letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
+  # An example of a static HTTP file hosting site
+  camera:
+    image: nginx
     volumes:
-      - ${CONTAINERS_DIR}/certs:/etc/nginx/certs:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    volumes_from:
-      - nginx-proxy
+      - ${MEDIA_DIR}/Camera:/home/app:ro
+      - ./conf.d/static.conf:/etc/nginx/sites-enabled/default
+      - ./conf.d/static.conf:/etc/nginx/conf.d/default.conf
+    environment:
+      - VIRTUAL_HOST=camera.jibby.org
     restart: always
 
   postgres:
-    image: postgres
-    restart: always
+    image: postgres:10.5
     volumes:
       - ${CONTAINERS_DIR}/postgres/data:/var/lib/postgresql/data
       - ${CONTAINERS_DIR}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: always
 
   mariadb:
     image: mariadb
-    restart: always
     volumes:
       - ${CONTAINERS_DIR}/mariadb:/var/lib/mysql
     environment:
-      # If mariadb is used for more than wordpress in the future, it'll need its own /docker-entrypoint-initdb.d entry. But for now, envrionment variables are fine.
+      # If mariadb is used for more than wordpress in the future, it'll need
+      # its own /docker-entrypoint-initdb.d entry. But for now, envrionment
+      # variables are fine.
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=${MARIADB_USER}
       - MYSQL_PASSWORD=${MARIADB_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MARIADB_PASSWORD}
+    restart: always
 
   wordpress:
     image: wordpress
     links:
         - mariadb:mysql
-    restart: always
     volumes:
       - ${CONTAINERS_DIR}/wordpress:/var/www/html
     environment:
       - WORDPRESS_DB_USER=${MARIADB_USER}
       - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
-      - VIRTUAL_HOST=josh1147582.jumpingcrab.com,jossh.us
-      - LETSENCRYPT_HOST=josh1147582.jumpingcrab.com,jossh.us
+      - VIRTUAL_HOST=jibby.org
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    restart: always
 
-  nextcloud:  
+  nextcloud:
     image: nextcloud
     expose:
       - "80"
@@ -74,13 +77,11 @@ services:
     volumes:
       - ${CONTAINERS_DIR}/nextcloud:/var/www/html
     environment:
-      - VIRTUAL_HOST=nextcloud.josh1147582.jumpingcrab.com,nextcloud.jossh.us
+      - VIRTUAL_HOST=nextcloud.jibby.org
       - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=nextcloud.josh1147582.jumpingcrab.com,nextcloud.jossh.us
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     restart: always
 
-  gogs:  
+  gogs:
     image: gogs/gogs
     expose:
       - "3000"
@@ -89,33 +90,32 @@ services:
     #links:
     #  - postgres
     environment:
-      - VIRTUAL_HOST=gogs.josh1147582.jumpingcrab.com,gogs.jossh.us
-      - LETSENCRYPT_HOST=gogs.josh1147582.jumpingcrab.com,gogs.jossh.us
+      - VIRTUAL_HOST=gogs.jibby.org
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     restart: always
 
-  # Matrix doesn't play well with reverse proxying. See:
-  # https://github.com/matrix-org/synapse#reverse-proxying-the-federation-port
-  # https://github.com/vector-im/riot-web/issues/3329
-  # So this container isn't proxied, but uses the postgres container.
   matrix:
-    image: avhost/docker-matrix
+    image: matrixdotorg/synapse
     expose:
       - "8008"
-      - "8448"
-      - "3478"
-    ports:
-      - "8008:8008"
-      - "8448:8448"
-      - "3478:3478"
     links:
       - postgres
+    environment:
+      - SYNAPSE_SERVER_NAME=matrix.jibby.org
+      - SYNAPSE_REPORT_STATS=no
+      - SYNAPSE_NO_TLS=true
+      - SYNAPSE_ENABLE_REGISTRATION=no
+      - SYNAPSE_LOG_LEVEL=INFO
+      - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=synapse
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=synapse
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - VIRTUAL_HOST=matrix.jibby.org
+      - VIRTUAL_PROTO=http
+      - VIRTUAL_PORT=8008
     volumes:
       - ${CONTAINERS_DIR}/matrix:/data
-      - ${CONTAINERS_DIR}/certs:/keys
-    #environment:
-    #  - SYNAPSE_CACHE_FACTOR=0.75
     restart: always
 
   keeweb:
@@ -123,110 +123,88 @@ services:
     expose:
       - "443"
     environment:
-      - VIRTUAL_HOST=keeweb.jossh.us
-      - LETSENCRYPT_HOST=keeweb.jossh.us
+      - VIRTUAL_HOST=keeweb.jibby.org
       - VIRTUAL_PROTO=https
       - VIRTUAL_PORT=443
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-
-  #libresonic:
-  #  image: linuxserver/libresonic
-  #  expose:
-  #    - "4040"
-  #  volumes:
-  #    - ${CONTAINERS_DIR}/libresonic:/config
-  #    - ${MEDIA_DIR}/Music:/music
-  #  environment:
-  #    - VIRTUAL_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
-  #    - LETSENCRYPT_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
-  #    - VIRTUAL_PORT=4040
-  #    - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-  #    - TZ=America/New_York
-  #  restart: always
-
-  quassel:
-    image: linuxserver/quassel-core
-    expose:
-      - "4242"
-    ports:
-      - "4242:4242"
-    volumes:
-      - ${CONTAINERS_DIR}/quassel:/config
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - PGID=1000
-      - PUID=1000
     restart: always
 
   netdata:
-    image: firehol/netdata
+    image: titpetric/netdata
     privileged: true
-    #cap_add:
-    #  - SYS_PTRACE
+    hostname: cumulus-monitor
     expose:
       - "19999"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+      - ${CONTAINERS_DIR}/netdata/health_alarm_notify.conf:/etc/netdata/health_alarm_notify.conf
+      - ${CONTAINERS_DIR}/netdata/conf.d/:/usr/lib/netdata/conf.d/
     environment:
-      - VIRTUAL_HOST=netdata.jossh.us
-      - LETSENCRYPT_HOST=netdata.jossh.us
+      - VIRTUAL_HOST=netdata.jibby.org
       - VIRTUAL_PORT=19999
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-    restart: always
-
-  quassel-webserver:
-    image: bodsch/docker-quassel-web
-    expose:
-      - "64080"
-    ports:
-        - "8080:64080"
-    links:
-      - quassel
-    environment:
-      - QUASSEL_HOST=quassel
-      - QUASSEL_PORT=4242
-      - FORCE_DEFAULT=true
-      - WEBSERVER_MODE=http
-      - VIRTUAL_HOST=quassel.jossh.us
-      - LETSENCRYPT_HOST=quassel.jossh.us
-      - VIRTUAL_PORT=64080
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - SMTP_TO=${LETSENCRYPT_EMAIL}
+      - SMTP_FROM=${SMTP_USER}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     restart: always
 
   selfoss:
-    image: jenserat/selfoss
+    image: hardware/selfoss
     expose:
-      - "80"
+      - "8888"
     links:
       - postgres
     volumes:
-      - ${CONTAINERS_DIR}/selfoss:/var/www/html/data
+      - ${CONTAINERS_DIR}/selfoss:/selfoss/data
     environment:
-      - VIRTUAL_HOST=selfoss.jossh.us
-      - LETSENCRYPT_HOST=selfoss.jossh.us
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - VIRTUAL_HOST=selfoss.jibby.org
+      - VIRTUAL_PORT=8888
+    restart: always
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    expose:
+      - "8096"
+    volumes:
+      - ${CONTAINERS_DIR}/jellyfin:/config
+      - ${MEDIA_DIR}:/media
+    environment:
+      - VIRTUAL_HOST=jellyfin.jibby.org
+      - VIRTUAL_PORT=8096
     restart: always
 
   # Currently unused container configs:
 
-  #znc:
-  #  image: znc
-  #  expose:
-  #    - "6697"
-  #  ports:
-  #    - "6697:6697"
-  #  volumes:
-  #    - ${CONTAINERS_DIR}/znc:/home/znc/.znc
-  #  environment:
-  #    - VIRTUAL_HOST=znc.jossh.us
-  #    - LETSENCRYPT_HOST=znc.jossh.us
-  #    - VIRTUAL_PORT=6697
-  #    - VIRTUAL_PROTO=https
-  #    - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-  #  restart: always
-    
+  # plex:
+  #   image: plexinc/pms-docker
+  #   expose:
+  #     - "32400"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/plex:/config
+  #     - /tmp/plex:/transcode
+  #     - ${MEDIA_DIR}:/data
+  #   environment:
+  #     - PLEX_CLAIM="claim-pPM26k9y5p8hcbpnjzAq"
+  #     - VIRTUAL_HOST=plex.jossh.us,plex.jibby.org
+  #     - VIRTUAL_PORT=32400
+  #     - TZ="America/New_York"
+  #   restart: always
+
+  # znc:
+  #   image: znc
+  #   expose:
+  #     - "6697"
+  #   ports:
+  #     - "6697:6697"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/znc:/home/znc/.znc
+  #   environment:
+  #     - VIRTUAL_HOST=znc.jossh.us
+  #     - LETSENCRYPT_HOST=znc.jossh.us
+  #     - VIRTUAL_PORT=6697
+  #     - VIRTUAL_PROTO=https
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #   restart: always
 
   # gitlab:
   #   image: gitlab/gitlab-ce
@@ -244,3 +222,112 @@ services:
   #     - ${CONTAINERS_DIR}/gitlab/logs:/var/log/gitlab
   #     - ${CONTAINERS_DIR}/gitlab/data:/var/opt/gitlab
   #   restart: always
+
+  # libresonic:
+  #   image: linuxserver/libresonic
+  #   expose:
+  #     - "4040"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/libresonic:/config
+  #     - ${MEDIA_DIR}/Music:/music
+  #   environment:
+  #     - VIRTUAL_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
+  #     - LETSENCRYPT_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
+  #     - VIRTUAL_PORT=4040
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #     - TZ=America/New_York
+  #   restart: always
+
+  # quassel:
+  #   image: linuxserver/quassel-core
+  #   expose:
+  #     - "4242"
+  #   links:
+  #     - postgres
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/quassel:/config
+  #     - /etc/localtime:/etc/localtime:ro
+  #   environment:
+  #     - PGID=1000
+  #     - PUID=1000
+  #     - VIRTUAL_HOST=quassel.jossh.us,quassel.jibby.org
+  #     - VIRTUAL_PORT=4242
+  #   restart: always
+
+  # quassel-webserver:
+  #   image: bodsch/docker-quassel-web
+  #   expose:
+  #     - "64080"
+  #   #ports:
+  #   #   port- "8080:64080"
+  #   links:
+  #     - quassel
+  #   environment:
+  #     - QUASSEL_HOST=quassel
+  #     - QUASSEL_PORT=4242
+  #     - FORCE_DEFAULT=true
+  #     - WEBSERVER_MODE=http
+  #     - VIRTUAL_HOST=quassel-web.jossh.us,quassel-web.jibby.org
+  #     - VIRTUAL_PORT=64080
+  #   restart: always
+
+  ### Mastodon
+  #
+  # redis:
+  #   restart: always
+  #   image: redis:4.0-alpine
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/redis:/data
+  #
+  # mastodon-web:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   environment:
+  #     - VIRTUAL_HOST=mastodon.jibby.org
+  #     - VIRTUAL_PORT=3000
+  #       #- VIRTUAL_PROTO=https
+  #   command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000 -b '0.0.0.0'"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget -q --spider --header 'x-forwarded-proto: https' --proxy off localhost:3000/api/v1/instance || exit 1"]
+  #   # ports:
+  #   #   - "127.0.0.1:3000:3000"
+  #   expose:
+  #     - "3000"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #      - es
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/mastodon-web/public/system:/mastodon/public/system
+  #
+  # mastodon-streaming:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   command: yarn start
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget -q --spider --header 'x-forwarded-proto: https' --proxy off localhost:4000/api/v1/streaming/health || exit 1"]
+  #   # ports:
+  #   #   - "127.0.0.1:4000:4000"
+  #   expose:
+  #     - "4000"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #
+  # mastodon-sidekiq:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   command: bundle exec sidekiq
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/mastodon-sidekiq/public/system:/mastodon/public/system
