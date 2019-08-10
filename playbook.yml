@@ -3,6 +3,10 @@
   roles:
     - basic
 
+- hosts: orcha
+  roles:
+    - orcha
+
 - hosts: web
   roles:
     - web
