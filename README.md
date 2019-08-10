@@ -1,8 +1,10 @@
-# docker-compose-server
+# Ansible & Docker homelab configurations
 
-A docker-compose config for my personal server.
+Set up a series of machines for web hosting & data storage.
 
-## Using these files
+# Using these files
+
+## Docker
 
 The easiest way to use these files is to copy the config of a service you want into your own `docker-compose.yaml` file. You'll need to change my domain names to your own.
 
@@ -14,3 +16,7 @@ For example, if your compose file uses the `CONTAINERS_DIR` and `POSTGRES_PASSWO
 CONTAINERS_DIR=/home/user/my-container-data
 POSTGRES_PASSWORD=mysecretpassword
 ```
+
+## Ansible
+
+The hostnames & keys may be changed to set up a generic web & storage instance, ready to run docker-compose/host a NAS.

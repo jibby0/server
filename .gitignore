@@ -1,2 +1,4 @@
 htpasswd
 .env
+playbook.retry
+keys/

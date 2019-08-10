@@ -1,0 +1,13 @@
+---
+- hosts: all
+  roles:
+    - basic
+
+- hosts: web
+  roles:
+    - web
+
+- hosts: nas
+  roles:
+    - nas
+
