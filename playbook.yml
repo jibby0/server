@@ -7,11 +7,15 @@
   roles:
     - orcha
 
-- hosts: web
-  roles:
-    - web
-
 - hosts: nas
   roles:
     - nas
+  vars:
+    user: josh
+
+- hosts: web
+  roles:
+    - web
+  vars:
+    user: josh
 

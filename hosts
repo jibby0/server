@@ -1,8 +1,8 @@
-[web]
-web-internal ansible_ssh_private_key_file=~/.ssh/internal_ed25519
-
-[nas]
-nas-internal ansible_ssh_private_key_file=~/.ssh/internal_ed25519
-
-[orcha]
-localhost ansible_connection=local
+all:
+  hosts:
+    web:
+      ansible_ssh_private_key_file: ~/.ssh/internal_ed25519
+    nas:
+      ansible_ssh_private_key_file: ~/.ssh/internal_ed25519
+    orcha:
+      ansible_connection: local

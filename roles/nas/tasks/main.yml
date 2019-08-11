@@ -1,0 +1,29 @@
+- name: Create mountable dir
+  file:
+    path: /nfs
+    state: directory
+    mode: u=rwx,g=r,o=r
+    owner: '{{ user }}'
+    group: '{{ user }}'
+
+- name: Ensure NFS utilities are installed.
+  apt:
+    name: '{{ packages }}'
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - nfs-common
+      - nfs-kernel-server
+
+- name: copy /etc/exports
+  template:
+    src: templates/nas/etc/exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+
+- name: restart nfs server
+  service:
+    name: nfs-kernel-server
+    state: restarted

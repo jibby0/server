@@ -1,8 +1,20 @@
 ---
-- name: Remove localhost hostname definition
-  lineinfile:
-    path: /etc/hosts
-    # hostnamectl doesn't update the hostname in this entry, so we can't 
-    # match against {{ ansible_facts['nodename'] }}.
-    regexp: "^127\\.0\\.1\\.1[ \\t]+"
-    state: absent
+- name: Ensure QEMU tools is installed
+  apt:
+    name: qemu-guest-agent
+    state: present
+    update_cache: yes
+
+- name: Ensure rsync is installed
+  apt:
+    name: rsync
+    state: present
+
+# Cloudinit sets this now, no need to remove it.
+# - name: Remove localhost hostname definition
+#   lineinfile:
+#     path: /etc/hosts
+#     # hostnamectl doesn't update the hostname in this entry, so we can't 
+#     # match against {{ ansible_facts['nodename'] }}.
+#     regexp: "^127\\.0\\.1\\.1[ \\t]+"
+#     state: absent
