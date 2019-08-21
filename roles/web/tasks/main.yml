@@ -104,4 +104,4 @@
   cron:
     name: "renew certs and copy"
     special_time: weekly
-    job: '/usr/local/bin/certbot renew --post-hook "cp -L /etc/letsencrypt/live/jibby.org/cert.pem /static_certs/jibby.org.crt && cp -L /etc/letsencrypt/live/jibby.org/privkey.pem /static_certs/jibby.org.key && cp -L /etc/letsencrypt/live/jibby.org-0001/cert.pem /static_certs/shared.crt && cp -L /etc/letsencrypt/live/jibby.org-0001/privkey.pem /static_certs/shared.key && systemctl restart nginx"'
+    job: '/root/.local/bin/certbot renew --post-hook "mkdir -p  /static_certs && cp -L /etc/letsencrypt/live/jibby.org/cert.pem /static_certs/jibby.org.crt && cp -L /etc/letsencrypt/live/jibby.org/privkey.pem /static_certs/jibby.org.key && cp -L /etc/letsencrypt/live/jibby.org-0001/cert.pem /static_certs/shared.crt && cp -L /etc/letsencrypt/live/jibby.org-0001/privkey.pem /static_certs/shared.key && docker restart compose_nginx_proxy_1"'

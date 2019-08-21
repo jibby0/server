@@ -16,6 +16,18 @@
       - nfs-common
       - nfs-kernel-server
 
+- name: Format the data drive
+  filesystem:
+    fstype: ext4
+    dev: /dev/sdb1
+
+- name: Mount the data drive
+  mount:
+    src: /dev/sdb1
+    path: /nfs
+    fstype: ext4
+    state: mounted
+
 - name: copy /etc/exports
   template:
     src: templates/nas/etc/exports.j2
