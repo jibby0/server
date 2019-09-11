@@ -71,14 +71,7 @@
     fstype: nfs
     state: mounted
 
-- name: Install certbot
-  get_url:
-    url: https://dl.eff.org/certbot-auto
-    dest: /usr/local/bin/certbot-auto
-    mode: u=rwx,g=r,o=r
-    owner: root
-    group: root
-
+# TODO the certbot installation process probably needs fixing
 - name: Install pip
   apt:
     name: python-pip
@@ -98,10 +91,30 @@
     group: root
 
 - name: Run certbot
-  shell: certbot renew --dns-cloudflare --dns-cloudflare-credentials /root/cloudflare.ini -d jibby.org,\*.jibby.org --preferred-challenges dns-01
+  shell: /root/.local/bin/certbot renew --dns-cloudflare --dns-cloudflare-credentials /root/cloudflare.ini -d jibby.org,\*.jibby.org --preferred-challenges dns-01
+  ignore_errors: yes  # This fails if the certs already exist
 
-- name: Schedule certbot renewal cronjobs and copying of static cert files (for sharing with Docker)
+- name: Schedule certbot renewal cronjob
   cron:
-    name: "renew certs and copy"
+    name: "renew certs"
     special_time: weekly
-    job: '/root/.local/bin/certbot renew --post-hook "mkdir -p  /static_certs && cp -L /etc/letsencrypt/live/jibby.org/cert.pem /static_certs/jibby.org.crt && cp -L /etc/letsencrypt/live/jibby.org/privkey.pem /static_certs/jibby.org.key && cp -L /etc/letsencrypt/live/jibby.org-0001/cert.pem /static_certs/shared.crt && cp -L /etc/letsencrypt/live/jibby.org-0001/privkey.pem /static_certs/shared.key && docker restart compose_nginx_proxy_1"'
+    job: '/root/.local/bin/certbot renew'
+
+- name: Set outward facing nginx server
+  copy:
+    src: templates/web/docker.conf
+    dest: /etc/nginx/conf.d/docker.conf
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Start and enable Nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes
