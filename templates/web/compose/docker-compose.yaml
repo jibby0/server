@@ -105,6 +105,9 @@ services:
     links:
       - postgres
     environment:
+      # NOTE: These don't directly configure anything anymore.
+      #  They can be used with `migrate_config` to build
+      #  homeserver.yaml
       - SYNAPSE_SERVER_NAME=matrix.jibby.org
       - SYNAPSE_REPORT_STATS=no
       - SYNAPSE_NO_TLS=true
