@@ -17,6 +17,11 @@ services:
       - ./conf.d/real_ip.conf:/etc/nginx/conf.d/real_ip.conf:ro
       # Password-protect some subdomains
       - ./htpasswd:/etc/nginx/htpasswd
+      # Certs for the top level domain & subdomains
+      # - ${TOP_DOMAIN_CERT}:/etc/nginx/certs/jibby.org.crt
+      # - ${TOP_DOMAIN_KEY}:/etc/nginx/certs/jibby.org.key
+      # - ${WC_DOMAIN_CERT}:/etc/nginx/certs/shared.crt
+      # - ${WC_DOMAIN_KEY}:/etc/nginx/certs/shared.key
     environment:
       - DEFAULT_HOST=jibby.org
     restart: always
@@ -43,32 +48,17 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     restart: always
 
-  mariadb:
-    image: mariadb
-    volumes:
-      - ${CONTAINERS_DIR}/mariadb:/var/lib/mysql
+  jekyll:
+    build: https://github.com/jibby0/docker-jekyll-webhook.git
     environment:
-      # If mariadb is used for more than wordpress in the future, it'll need
-      # its own /docker-entrypoint-initdb.d entry. But for now, envrionment
-      # variables are fine.
-      - MYSQL_DATABASE=wordpress
-      - MYSQL_USER=${MARIADB_USER}
-      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MARIADB_PASSWORD}
-    restart: always
-
-  wordpress:
-    image: wordpress
-    links:
-        - mariadb:mysql
-    volumes:
-      - ${CONTAINERS_DIR}/wordpress:/var/www/html
-    environment:
-      - WORDPRESS_DB_USER=${MARIADB_USER}
-      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
+      - TZ=America/New_York
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - REPO=https://github.com/jibby0/blog.git
       - VIRTUAL_HOST=jibby.org
-      - VIRTUAL_PORT=3000
+      - VIRTUAL_PORT=80
     restart: always
+    volumes:
+      - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
 
   nextcloud:
     image: nextcloud
@@ -90,6 +80,8 @@ services:
       - "3000"
     volumes:
       - ${CONTAINERS_DIR}/gogs:/data
+    # NOTE: My gogs instance isn't happy with postgres. For now, it's a small server
+    # and sqlite is fine, but I should fix this eventually.
     #links:
     #  - postgres
     environment:
@@ -108,16 +100,16 @@ services:
       # NOTE: These don't directly configure anything anymore.
       #  They can be used with `migrate_config` to build
       #  homeserver.yaml
-      - SYNAPSE_SERVER_NAME=matrix.jibby.org
-      - SYNAPSE_REPORT_STATS=no
-      - SYNAPSE_NO_TLS=true
-      - SYNAPSE_ENABLE_REGISTRATION=no
-      - SYNAPSE_LOG_LEVEL=INFO
-      - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=synapse
-      - POSTGRES_HOST=postgres
-      - POSTGRES_USER=synapse
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      # - SYNAPSE_SERVER_NAME=matrix.jibby.org
+      # - SYNAPSE_REPORT_STATS=no
+      # - SYNAPSE_NO_TLS=true
+      # - SYNAPSE_ENABLE_REGISTRATION=no
+      # - SYNAPSE_LOG_LEVEL=INFO
+      # - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
+      # - POSTGRES_DB=synapse
+      # - POSTGRES_HOST=postgres
+      # - POSTGRES_USER=synapse
+      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - VIRTUAL_HOST=matrix.jibby.org
       - VIRTUAL_PROTO=http
       - VIRTUAL_PORT=8008
@@ -145,6 +137,7 @@ services:
     volumes:
       - ${CONTAINERS_DIR}/selfoss:/selfoss/data
     environment:
+      - CRON_PERIOD=5m
       - VIRTUAL_HOST=selfoss.jibby.org
       - VIRTUAL_PORT=8888
       - CERT_NAME=shared
@@ -162,3 +155,210 @@ services:
       - VIRTUAL_PORT=8096
       - CERT_NAME=shared
     restart: always
+
+  # Currently unused container configs:
+
+  # plex:
+  #   image: plexinc/pms-docker
+  #   expose:
+  #     - "32400"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/plex:/config
+  #     - /tmp/plex:/transcode
+  #     - ${MEDIA_DIR}:/data
+  #   environment:
+  #     - PLEX_CLAIM="claim-pPM26k9y5p8hcbpnjzAq"
+  #     - VIRTUAL_HOST=plex.jossh.us,plex.jibby.org
+  #     - VIRTUAL_PORT=32400
+  #     - TZ="America/New_York"
+  #   restart: always
+
+  # znc:
+  #   image: znc
+  #   expose:
+  #     - "6697"
+  #   ports:
+  #     - "6697:6697"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/znc:/home/znc/.znc
+  #   environment:
+  #     - VIRTUAL_HOST=znc.jossh.us
+  #     - LETSENCRYPT_HOST=znc.jossh.us
+  #     - VIRTUAL_PORT=6697
+  #     - VIRTUAL_PROTO=https
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #   restart: always
+
+  # gitlab:
+  #   image: gitlab/gitlab-ce
+  #   expose:
+  #     - "80"
+  #     - "22"
+  #   # Gitlab destroys databases when seeding them, and requires an admin user for seeding. So let's not link it to the running postgres instance.
+  #   environment:
+  #     - VIRTUAL_HOST=gitlab.jossh.us
+  #     - VIRTUAL_PORT=80
+  #     - LETSENCRYPT_HOST=gitlab.jossh.us
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/gitlab/config:/etc/gitlab
+  #     - ${CONTAINERS_DIR}/gitlab/logs:/var/log/gitlab
+  #     - ${CONTAINERS_DIR}/gitlab/data:/var/opt/gitlab
+  #   restart: always
+
+  # libresonic:
+  #   image: linuxserver/libresonic
+  #   expose:
+  #     - "4040"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/libresonic:/config
+  #     - ${MEDIA_DIR}/Music:/music
+  #   environment:
+  #     - VIRTUAL_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
+  #     - LETSENCRYPT_HOST=libresonic.josh1147582.jumpingcrab.com,libresonic.jossh.us
+  #     - VIRTUAL_PORT=4040
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #     - TZ=America/New_York
+  #   restart: always
+
+  # quassel:
+  #   image: linuxserver/quassel-core
+  #   expose:
+  #     - "4242"
+  #   links:
+  #     - postgres
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/quassel:/config
+  #     - /etc/localtime:/etc/localtime:ro
+  #   environment:
+  #     - PGID=1000
+  #     - PUID=1000
+  #     - VIRTUAL_HOST=quassel.jossh.us,quassel.jibby.org
+  #     - VIRTUAL_PORT=4242
+  #   restart: always
+
+  # quassel-webserver:
+  #   image: bodsch/docker-quassel-web
+  #   expose:
+  #     - "64080"
+  #   #ports:
+  #   #   port- "8080:64080"
+  #   links:
+  #     - quassel
+  #   environment:
+  #     - QUASSEL_HOST=quassel
+  #     - QUASSEL_PORT=4242
+  #     - FORCE_DEFAULT=true
+  #     - WEBSERVER_MODE=http
+  #     - VIRTUAL_HOST=quassel-web.jossh.us,quassel-web.jibby.org
+  #     - VIRTUAL_PORT=64080
+  #   restart: always
+
+  # netdata:
+  #   image: titpetric/netdata
+  #   privileged: true
+  #   hostname: cumulus-monitor
+  #   expose:
+  #     - "19999"
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - ${CONTAINERS_DIR}/netdata/health_alarm_notify.conf:/etc/netdata/health_alarm_notify.conf
+  #     - ${CONTAINERS_DIR}/netdata/conf.d/:/usr/lib/netdata/conf.d/
+  #   environment:
+  #     - VIRTUAL_HOST=netdata.jibby.org
+  #     - VIRTUAL_PORT=19999
+  #     - CERT_NAME=shared
+  #     - SMTP_TO=${LETSENCRYPT_EMAIL}
+  #     - SMTP_FROM=${SMTP_USER}
+  #     - SMTP_USER=${SMTP_USER}
+  #     - SMTP_PASS=${SMTP_PASS}
+  #   restart: always
+
+  # wordpress:
+  #   image: wordpress
+  #   links:
+  #       - mariadb:mysql
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/wordpress:/var/www/html
+  #   environment:
+  #     - WORDPRESS_DB_USER=${MARIADB_USER}
+  #     - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
+  #     - VIRTUAL_HOST=jibby.org
+  #     - VIRTUAL_PORT=3000
+  #   restart: always
+
+  # mariadb:
+  #   image: mariadb
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/mariadb:/var/lib/mysql
+  #   environment:
+  #     # If mariadb is used for more than wordpress in the future, it'll need
+  #     # its own /docker-entrypoint-initdb.d entry. But for now, envrionment
+  #     # variables are fine.
+  #     - MYSQL_DATABASE=wordpress
+  #     - MYSQL_USER=${MARIADB_USER}
+  #     - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+  #     - MYSQL_ROOT_PASSWORD=${MARIADB_PASSWORD}
+  #   restart: always
+
+  ### Mastodon
+  #
+  # redis:
+  #   restart: always
+  #   image: redis:4.0-alpine
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/redis:/data
+  #
+  # mastodon-web:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   environment:
+  #     - VIRTUAL_HOST=mastodon.jibby.org
+  #     - VIRTUAL_PORT=3000
+  #       #- VIRTUAL_PROTO=https
+  #   command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000 -b '0.0.0.0'"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget -q --spider --header 'x-forwarded-proto: https' --proxy off localhost:3000/api/v1/instance || exit 1"]
+  #   # ports:
+  #   #   - "127.0.0.1:3000:3000"
+  #   expose:
+  #     - "3000"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #      - es
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/mastodon-web/public/system:/mastodon/public/system
+  #
+  # mastodon-streaming:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   command: yarn start
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget -q --spider --header 'x-forwarded-proto: https' --proxy off localhost:4000/api/v1/streaming/health || exit 1"]
+  #   # ports:
+  #   #   - "127.0.0.1:4000:4000"
+  #   expose:
+  #     - "4000"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #
+  # mastodon-sidekiq:
+  #         #build: ./docker-mastodon
+  #   image: tootsuite/mastodon
+  #   restart: always
+  #   env_file: .env.mastodon
+  #   command: bundle exec sidekiq
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/mastodon-sidekiq/public/system:/mastodon/public/system
