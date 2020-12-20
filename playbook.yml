@@ -2,20 +2,5 @@
 - hosts: all
   roles:
     - basic
-
-- hosts: orcha
-  roles:
-    - orcha
-
-- hosts: nas
-  roles:
-    - nas
   vars:
     user: josh
-
-- hosts: web
-  roles:
-    - web
-  vars:
-    user: josh
-

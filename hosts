@@ -1,9 +1,5 @@
 all:
   hosts:
-    web:
+    all:
       ansible_ssh_private_key_file: ~/.ssh/orcha_ed25519
-    nas:
-      ansible_ssh_private_key_file: ~/.ssh/orcha_ed25519
-    orcha:
-      ansible_connection: local
 
