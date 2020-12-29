@@ -1,3 +1,5 @@
 htpasswd
 .env
 playbook.retry
+.venv
+hosts
