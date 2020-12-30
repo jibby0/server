@@ -9,60 +9,75 @@ services:
     image: traefik:v2.2
     ports:
       - 80:80
-      # - 443:443
+      - 443:443
     deploy:
       placement:
         constraints:
           - node.role == manager
       labels:
-        # Enable the dashboard UI
         - traefik.enable=true
+
+        # Enable the dashboard UI
         - traefik.http.routers.api.rule=Host(`board.${DOMAIN}`)
         - traefik.http.routers.api.service=api@internal
         - traefik.http.routers.api.middlewares=auth
-        - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_API_USERS}
+        - traefik.http.routers.api.tls=true
+        - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_API_USERS}"
         # Dummy service for Swarm port detection. The port can be any valid integer value.
         - traefik.http.services.dummy-svc.loadbalancer.server.port=9999
 
         - traefik.http.routers.traefik.tls=true
-        - traefik.http.routers.traefik.tls.certresolver=cloudflare
+
+        # Use LS to get/renew certs for the TLD & subdomains
+        - traefik.http.routers.traefik.tls.certresolver=le
         - traefik.http.routers.traefik.tls.domains[0].main=${DOMAIN}
         - traefik.http.routers.traefik.tls.domains[1].sans=*.${DOMAIN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${CONTAINERS_DIR}/traefik:/certificates
     command:
-      - --providers.docker=true
+      # Require a "traefik.enable=true" label
       - --providers.docker.exposedbydefault=false
+
       - --providers.docker.swarmmode=true
+
+      # HTTP redirects to HTTPS
       - --entrypoints.web.address=:80
-      #- --entrypoints.web.redirections.entrypoint.permanent=false
-      #- --entrypoints.web.redirections.entryPoint.to=websecure
-      #- --entrypoints.web.redirections.entryPoint.scheme=https
-      #- --entrypoints.websecure.address=:443
-      #- --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
-      #- --certificatesresolvers.le.acme.storage=/certificates/acme.json
-      #- --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
+      - --entrypoints.web.http.redirections.entrypoint.permanent=false
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+
+      - --entrypoints.websecure.address=:443
+
+      # Auto cert renewal via cloudflare
+      - --certificatesresolvers.le.acme.email=${LETSENCRYPT_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      - --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
+
       - --accesslog=true
       - --log=true
+
+      # Enable the traefik dashboard
       - --api=true
     environment:
-      # - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
-      # - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
 
-  # An example of a static HTTP file hosting site
-  #camera:
-  #  image: nginx
-  #  deploy:
-  #    labels:
-  #      - traefik.enable=true
-  #      - traefik.http.services.jekyll.loadbalancer.server.port=80
-  #      - traefik.http.routers.jekyll.rule=Host(`camera.${DOMAIN}`)
-  #  volumes:
-  #    - ${MEDIA_DIR}/Camera:/home/app:ro
-  #    - ./conf.d/static.conf:/etc/nginx/sites-enabled/default
-  #    - ./conf.d/static.conf:/etc/nginx/conf.d/default.conf
-  #  restart: always
+  jekyll:
+    image: jibby0/docker-jekyll-webhook
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.jekyll.tls=true
+        - traefik.http.routers.jekyll.rule=Host(`${DOMAIN}`)
+        - traefik.http.services.jekyll.loadbalancer.server.port=80
+    environment:
+      - TZ=America/New_York
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - REPO=https://github.com/jibby0/blog.git
+    restart: always
+    volumes:
+      - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
 
   postgres:
     image: postgres:10.5
@@ -74,42 +89,30 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     restart: always
 
-  jekyll:
-    image: jibby0/docker-jekyll-webhook
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.services.jekyll.loadbalancer.server.port=80
-        - traefik.http.routers.jekyll.rule=Host(`${DOMAIN}`)
-    environment:
-      - TZ=America/New_York
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
-      - REPO=https://github.com/jibby0/blog.git
-    restart: always
-    volumes:
-      - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
-
   nextcloud:
-    image: nextcloud
+    image: nextcloud:20.0.4
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.http.services.nextcloud.loadbalancer.server.port=80
+        - traefik.http.routers.nextcloud.tls=true
         - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
+        - traefik.http.services.nextcloud.loadbalancer.server.port=80
     expose:
       - "80"
     links:
       - postgres
     volumes:
       - ${CONTAINERS_DIR}/nextcloud:/var/www/html
-    environment:
-      - VIRTUAL_HOST=nextcloud.jibby.org
-      - VIRTUAL_PORT=80
-      - CERT_NAME=shared
     restart: always
 
   gogs:
-    image: gogs/gogs
+    image: gogs/gogs:0.12.0
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.gogs.tls=true
+        - traefik.http.routers.gogs.rule=Host(`gogs.${DOMAIN}`)
+        - traefik.http.services.gogs.loadbalancer.server.port=3000
     expose:
       - "3000"
     volumes:
@@ -118,52 +121,46 @@ services:
     # and sqlite is fine, but I should fix this eventually.
     #links:
     #  - postgres
-    environment:
-      - VIRTUAL_HOST=gogs.jibby.org
-      - VIRTUAL_PORT=3000
-      - CERT_NAME=shared
     restart: always
 
   matrix:
-    image: matrixdotorg/synapse
+    image: matrixdotorg/synapse:v1.17.0-py3
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.matrix.tls=true
+        - traefik.http.routers.matrix.rule=Host(`matrix.${DOMAIN}`)
+        - traefik.http.services.matrix.loadbalancer.server.port=8008
     expose:
       - "8008"
     links:
       - postgres
-    environment:
-      # NOTE: These don't directly configure anything anymore.
-      #  They can be used with `migrate_config` to build
-      #  homeserver.yaml
-      # - SYNAPSE_SERVER_NAME=matrix.jibby.org
-      # - SYNAPSE_REPORT_STATS=no
-      # - SYNAPSE_NO_TLS=true
-      # - SYNAPSE_ENABLE_REGISTRATION=no
-      # - SYNAPSE_LOG_LEVEL=INFO
-      # - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
-      # - POSTGRES_DB=synapse
-      # - POSTGRES_HOST=postgres
-      # - POSTGRES_USER=synapse
-      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - VIRTUAL_HOST=matrix.jibby.org
-      - VIRTUAL_PROTO=http
-      - VIRTUAL_PORT=8008
+    # NOTE: These don't directly configure anything anymore.
+    #  They can be used with `migrate_config` to build
+    #  homeserver.yaml
+    # environment:
+    #   - SYNAPSE_SERVER_NAME=matrix.jibby.org
+    #   - SYNAPSE_REPORT_STATS=no
+    #   - SYNAPSE_NO_TLS=true
+    #   - SYNAPSE_ENABLE_REGISTRATION=no
+    #   - SYNAPSE_LOG_LEVEL=INFO
+    #   - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
+    #   - POSTGRES_DB=synapse
+    #   - POSTGRES_HOST=postgres
+    #   - POSTGRES_USER=synapse
+    #   - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ${CONTAINERS_DIR}/matrix:/data
     restart: always
 
-  keeweb:
-    image: antelle/keeweb
-    expose:
-      - "443"
-    environment:
-      - VIRTUAL_HOST=keeweb.jibby.org
-      - VIRTUAL_PROTO=https
-      - VIRTUAL_PORT=443
-      - CERT_NAME=shared
-    restart: always
-
   selfoss:
     image: hardware/selfoss
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.selfoss.tls=true
+        - traefik.http.routers.selfoss.rule=Host(`selfoss.${DOMAIN}`)
+        - traefik.http.services.selfoss.loadbalancer.server.port=8888
     expose:
       - "8888"
     links:
@@ -172,22 +169,41 @@ services:
       - ${CONTAINERS_DIR}/selfoss:/selfoss/data
     environment:
       - CRON_PERIOD=5m
-      - VIRTUAL_HOST=selfoss.jibby.org
-      - VIRTUAL_PORT=8888
-      - CERT_NAME=shared
     restart: always
 
   jellyfin:
-    image: jellyfin/jellyfin
+    # NOTE: live data's baseURL is set to jellyfin.$DOMAIN,
+    #  as a workaround for  https://github.com/jellyfin/jellyfin/issues/3852
+    image: jellyfin/jellyfin:10.6.4
+    deploy:
+      placement:
+        constraints:
+          - node.labels.media-encoding == true
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.jellyfin.tls=true
+        - traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN}`)
+        - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     expose:
       - "8096"
     volumes:
       - ${CONTAINERS_DIR}/jellyfin:/config
       - ${MEDIA_DIR}:/media
-      - /dev/shm/jellyfin-transcodes:/transcodes
-      - /dev/shm/jellyfin-cache:/cache
-    environment:
-      - VIRTUAL_HOST=jellyfin.jibby.org
-      - VIRTUAL_PORT=8096
-      - CERT_NAME=shared
+      #- /dev/shm/jellyfin-transcodes:/transcodes
+      #- /dev/shm/jellyfin-cache:/cache
     restart: always
+
+  # An example of a static HTTP file hosting site
+  #camera:
+  #  image: nginx
+  #  deploy:
+  #    labels:
+  #      - traefik.enable=true
+  #      - traefik.http.routers.camera.tls=true
+  #      - traefik.http.routers.camera.rule=Host(`camera.${DOMAIN}`)
+  #      - traefik.http.services.camera.loadbalancer.server.port=80
+  #  volumes:
+  #    - ${MEDIA_DIR}/Camera:/home/app:ro
+  #    - ./conf.d/static.conf:/etc/nginx/sites-enabled/default
+  #    - ./conf.d/static.conf:/etc/nginx/conf.d/default.conf
+  #  restart: always
