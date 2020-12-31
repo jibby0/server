@@ -172,8 +172,9 @@ services:
     restart: always
 
   jellyfin:
-    # NOTE: live data's baseURL is set to jellyfin.$DOMAIN,
-    #  as a workaround for  https://github.com/jellyfin/jellyfin/issues/3852
+    # 10.6.4 can't use Chromecasts properly: https://github.com/jellyfin/jellyfin/issues/3852
+    #  The "jellyfixer" service below fixes that for now. Assumes jellyfin's
+    #  baseURL is set to the default of `/jellyfin`
     image: jellyfin/jellyfin:10.6.4
     deploy:
       placement:
@@ -192,6 +193,19 @@ services:
       #- /dev/shm/jellyfin-transcodes:/transcodes
       #- /dev/shm/jellyfin-cache:/cache
     restart: always
+
+  jellyfixer:
+    image: quay.io/xsteadfastx/jellyfixer:latest
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.jellyfixer-secured.tls=true
+        - traefik.http.routers.jellyfixer-secured.rule=Host(`jellyfin.${DOMAIN}`) && Path(`/jellyfin/System/Info/Public`)
+        - traefik.http.services.jellyfixer-secured.loadbalancer.server.port=8088
+    command: http://jellyfin:8096/jellyfin
+    environment:
+      - JELLYFIXER_INTERNAL_URL=http://jellyfin:8096/jellyfin
+      - JELLYFIXER_EXTERNAL_URL=https://jellyfin.${DOMAIN}/jellyfin
 
   # An example of a static HTTP file hosting site
   #camera:
