@@ -1,5 +1,5 @@
 ---
-- name: Install apt-add-repository
+- name: Install apt-add-repository & nice to haves
   apt:
     name: '{{ packages }}'
     state: present
@@ -11,6 +11,8 @@
       - curl
       - gnupg2
       - software-properties-common
+      - nethogs
+      - tree
 
 - name: Add Docker's GPG key
   shell: curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -

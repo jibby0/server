@@ -62,7 +62,7 @@ services:
       # Enable the traefik dashboard
       - --api=true
 
-      - --providers.file.filename=/certificates/ceph.toml
+      - --providers.file.filename=/certificates/static.toml
     environment:
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
