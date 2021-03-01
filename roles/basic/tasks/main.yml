@@ -45,3 +45,21 @@
     warn: False  # Calls to uname
 
 # TODO mount the ceph cluster
+
+- name: Install ceph-ensure-mount service
+  copy:
+    src: templates/basic/ceph-ensure-mount.service
+    dest: /etc/systemd/system/ceph-ensure-mount.service
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: systemd daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable ceph-ensure-mount service
+  ansible.builtin.systemd:
+    name: ceph-ensure-mount
+    state: started
+    enabled: yes
