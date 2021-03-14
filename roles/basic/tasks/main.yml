@@ -13,6 +13,9 @@
       - software-properties-common
       - nethogs
       - tree
+      - memtest86+
+      - dnsutils
+      - jq
 
 - name: Add Docker's GPG key
   shell: curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
