@@ -47,6 +47,12 @@
   args:
     warn: False  # Calls to uname
 
+# TODO pull https://gogs.jibby.org/jhb2345/dotfiles
+
+# TODO stow profile, dircolors, zsh, antigen, vim
+
+# TODO set zsh as default shell
+
 # TODO mount the ceph cluster
 
 - name: Install ceph-ensure-mount service
