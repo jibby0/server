@@ -12,12 +12,14 @@
     [http.services.ceph]
       [http.services.ceph.loadBalancer]
         passHostHeader = true
+        # One or more ceph nodes
         [[http.services.ceph.loadBalancer.servers]]
-          # Any one of the ceph nodes
-          url = "http://172.16.69.30:7480"
+          url = "http://${CEPH1}:7480"
+        [[http.services.ceph.loadBalancer.servers]]
+          url = "http://${CEPH2}:7480"
     [http.services.swarmpit]
       [http.services.swarmpit.loadBalancer]
         passHostHeader = true
         [[http.services.swarmpit.loadBalancer.servers]]
           # The external IP of the swarm setup
-          url = "http://172.16.69.253:888"
+          url = "http://${EXTERNAL_IP}:888"
