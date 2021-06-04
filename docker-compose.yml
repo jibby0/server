@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 # Environment variables are replaced with definitions in .env, when run with:
 #
@@ -7,6 +7,9 @@ version: '3'
 networks:
   default:
     driver: overlay
+
+volumes:
+  traefik-certs: {}
 
 services:
   traefik:
@@ -36,11 +39,13 @@ services:
         # Use LS to get/renew certs for the TLD & subdomains
         - traefik.http.routers.traefik.tls.certresolver=le
         - traefik.http.routers.traefik.tls.domains[0].main=${DOMAIN}
-        - traefik.http.routers.traefik.tls.domains[1].sans=*.${DOMAIN}
+        - traefik.http.routers.traefik.tls.domains[0].sans=*.${DOMAIN}
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${CONTAINERS_DIR}/traefik/static.toml:/certificates/static.toml
+      - ${CONTAINERS_DIR}/traefik/static.toml:/static.toml
+      # cert storage can't be shared: https://doc.traefik.io/traefik/https/acme/#storage
+      - traefik-certs:/certificates
     command:
       # Require a "traefik.enable=true" label
       - --providers.docker.exposedbydefault=false
@@ -60,8 +65,9 @@ services:
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
       - --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
       - --certificatesresolvers.le.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53
-      # Uncomment for testing
+      # debug, uncomment for testing
       #- --certificatesresolvers.le.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+      #- --log.level=DEBUG
 
       - --accesslog=true
       - --log=true
@@ -69,7 +75,7 @@ services:
       # Enable the traefik dashboard
       - --api=true
 
-      - --providers.file.filename=/certificates/static.toml
+      - --providers.file.filename=/static.toml
     environment:
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
@@ -92,7 +98,7 @@ services:
       - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
 
   postgres:
-    image: postgres:10.5
+    image: postgres:13.2
     volumes:
       - ${CONTAINERS_DIR}/postgres/data:/var/lib/postgresql/data
       - ${CONTAINERS_DIR}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -102,7 +108,7 @@ services:
     restart: always
 
   nextcloud:
-    image: nextcloud:20.0.4
+    image: nextcloud:20.0.9
     deploy:
       labels:
         - traefik.enable=true
@@ -136,7 +142,7 @@ services:
     restart: always
 
   matrix:
-    image: matrixdotorg/synapse:v1.25.0
+    image: matrixdotorg/synapse:v1.33.2
     deploy:
       labels:
         - traefik.enable=true
@@ -164,6 +170,19 @@ services:
     volumes:
       - ${CONTAINERS_DIR}/matrix:/data
     restart: always
+
+  matrix_wellknown:
+    image: adrianrudnik/matrix-wellknown-server:1.0.1
+    volumes:
+      - ${CONTAINERS_DIR}/matrix/wellknown:/var/schema
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.matrix-wellknown.tls=true
+        - traefik.http.routers.matrix-wellknown.rule=Host(`matrix.${DOMAIN}`) && PathPrefix(`/.well-known/matrix/`)
+        - traefik.http.services.matrix-wellknown.loadbalancer.server.port=8080
+    expose:
+      - "8080"
 
   selfoss:
     image: hardware/selfoss
