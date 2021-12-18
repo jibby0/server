@@ -13,7 +13,7 @@ volumes:
 
 services:
   traefik:
-    image: traefik:v2.2
+    image: traefik:v2.5.4
     ports:
       - 80:80
       - 443:443
@@ -142,7 +142,7 @@ services:
     restart: always
 
   matrix:
-    image: matrixdotorg/synapse:v1.33.2
+    image: matrixdotorg/synapse:v1.46.0
     deploy:
       labels:
         - traefik.enable=true
@@ -185,7 +185,7 @@ services:
       - "8080"
 
   selfoss:
-    image: hardware/selfoss
+    image: jibby0/selfoss:2.18
     deploy:
       labels:
         - traefik.enable=true
@@ -200,6 +200,27 @@ services:
       - ${CONTAINERS_DIR}/selfoss:/selfoss/data
     environment:
       - CRON_PERIOD=5m
+    restart: always
+
+  plex:
+    image: ghcr.io/linuxserver/plex:version-1.25.1.5286-34f965be8
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.plex.tls=true
+        - traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)
+        - traefik.http.services.plex.loadbalancer.server.port=32400
+    expose:
+      - "32400"
+    volumes:
+      - ${CONTAINERS_DIR}/plex:/config
+      - ${MEDIA_DIR}/Video/Movies:/movies:ro
+      - ${MEDIA_DIR}/Video/Shows:/tv:ro
+      - ${MEDIA_DIR}/Video/Anime:/Anime:ro
+      - type: tmpfs
+        target: /transcodes
+        tmpfs:
+          size: 12000000000 # ~12gb
     restart: always
 
   jellyfin:
