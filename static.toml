@@ -8,6 +8,18 @@
       rule = "Host(`swarmpit.${DOMAIN}`)"
       service = "swarmpit"
       [http.routers.swarmpit.tls]
+    [http.routers.jellyfin]
+      rule = "Host(`jellyfin.${DOMAIN}`)"
+      service = "jellyfin"
+      [http.routers.jellyfin.tls]
+    [http.routers.jellyfixer]
+      rule = "Host(`jellyfin.${DOMAIN}`)  && Path(`/jellyfin/System/Info/Public`)"
+      service = "jellyfixer"
+      [http.routers.jellyfixer.tls]
+    [http.routers.plex]
+      rule = "Host(`plex.${DOMAIN}`)"
+      service = "plex"
+      [http.routers.plex.tls]
   [http.services]
     [http.services.ceph]
       [http.services.ceph.loadBalancer]
@@ -21,5 +33,19 @@
       [http.services.swarmpit.loadBalancer]
         passHostHeader = true
         [[http.services.swarmpit.loadBalancer.servers]]
-          # The external IP of the swarm setup
-          url = "http://${EXTERNAL_IP}:888"
+          url = "http://${EXTERNAL_SWARM_IP}:888"
+    [http.services.jellyfin]
+      [http.services.jellyfin.loadBalancer]
+        passHostHeader = true
+        [[http.services.jellyfin.loadBalancer.servers]]
+          url = "http://${MEDIA_IP}:8096"
+    [http.services.jellyfixer]
+      [http.services.jellyfixer.loadBalancer]
+        passHostHeader = true
+        [[http.services.jellyfixer.loadBalancer.servers]]
+          url = "http://${MEDIA_IP}:8088"
+    [http.services.plex]
+      [http.services.plex.loadBalancer]
+        passHostHeader = true
+        [[http.services.plex.loadBalancer.servers]]
+          url = "http://${MEDIA_IP}:32400"
