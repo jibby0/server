@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: plex
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: plex
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: plex
+        image: linuxserver/plex:amd64-version-1.26.2.5797-5bd057d2b
+        ports:
+        - containerPort: 32400
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/config"
+          name: config
+        - mountPath: "/config/Library/Application Support/Plex Media Server/Media"
+          name: media-metadata
+        - mountPath: "/media"
+          name: media
+        - mountPath: "/transcodes"
+          name: tmpfs
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        livenessProbe:
+          httpGet:
+            path: /web/index.html
+            port: 32400
+          failureThreshold: 5
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 10
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: plex-config-pvc
+      - name: media-metadata
+        persistentVolumeClaim:
+          claimName: plex-media-metadata-pvc
+      - name: media
+        persistentVolumeClaim:
+          claimName: plex-media-pvc
+      - name: tmpfs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 12Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-service
+  namespace: plex
+spec:
+  selector:
+    app: plex
+  type: ClusterIP
+  ports:
+  - name: plex-web-port
+    protocol: TCP
+    port: 32400
+    targetPort: http-web-svc

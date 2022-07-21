@@ -5,38 +5,9 @@ version: '3.7'
 networks:
   media:
     driver: overlay
+    attachable: true
 
 services:
-  plex:
-    image: linuxserver/plex:amd64-version-1.25.6.5577-c8bd13540
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    expose:
-      - "32400"
-    ports:
-      - mode: host
-        published: 32400
-        target: 32400
-    environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - ${CONTAINERS_DIR}/plex:/config
-      - ${MEDIA_DIR}/Video/Movies:/movies
-      - ${MEDIA_DIR}/Video/Shows:/tv
-      - ${MEDIA_DIR}/Video/Anime:/Anime
-      - type: tmpfs
-        target: /transcodes
-        tmpfs:
-          size: 12000000000 # ~12gb
-    restart: always
-    networks:
-      - media
 
   jellyfin:
     image: jellyfin/jellyfin:10.7.7

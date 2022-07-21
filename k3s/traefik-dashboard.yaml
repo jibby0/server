@@ -1,0 +1,13 @@
+# k3s doesn't expose the traefik dashboard in a service by default
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-dashboard
+spec:
+  ports:
+  - name: traefik
+    port: 9000
+    targetPort: 9000
+  selector:
+    app.kubernetes.io/name: traefik
+  type: ClusterIP

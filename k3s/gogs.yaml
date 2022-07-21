@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: gogs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gogs-pvc
+  namespace: gogs
+  labels:
+    app: gogs
+spec:
+  storageClassName: ceph-block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gogs
+  namespace: gogs
+spec:
+  selector:
+    matchLabels:
+      app: gogs
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gogs
+    spec:
+      containers:
+      - name: gogs
+        image: gogs/gogs:0.12.9
+        env:
+        - name: SOCAT_LINK
+          value: "false"
+        ports:
+        - containerPort: 22
+          name: ssh-svc
+        - containerPort: 3000
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/data"
+          name: data
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          failureThreshold: 10
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: gogs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gogs-service
+  namespace: gogs
+spec:
+  selector:
+    app: gogs
+  type: ClusterIP
+  ports:
+  - name: gogs-web-port
+    protocol: TCP
+    port: 3000
+    targetPort: http-web-svc
+  - name: gogs-ssh-port
+    protocol: TCP
+    port: 22
+    targetPort: ssh-svc

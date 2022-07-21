@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: selfoss
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: selfoss-pvc
+  namespace: selfoss
+  labels:
+    app: selfoss
+spec:
+  storageClassName: ceph-block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selfoss
+  namespace: selfoss
+spec:
+  selector:
+    matchLabels:
+      app: selfoss
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: selfoss
+    spec:
+      containers:
+      - name: selfoss
+        image: jibby0/selfoss:2.18
+        ports:
+        - containerPort: 8888
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/selfoss/data"
+          name: data
+        env:
+        - name: CRON_PERIOD
+          value: 5m
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8888
+          failureThreshold: 10
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: selfoss-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: selfoss-service
+  namespace: selfoss
+spec:
+  selector:
+    app: selfoss
+  type: ClusterIP
+  ports:
+  - name: selfoss-web-port
+    protocol: TCP
+    port: 8888
+    targetPort: http-web-svc
