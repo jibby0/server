@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudflared-metrics
+  labels:
+    name: cloudflared-metrics
+    app: cloudflared-metrics
+  namespace: kube-system
+spec:
+  ports:
+  - name: metrics
+    port: 2000
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    app: cloudflared
+  sessionAffinity: None
+  type: ClusterIP

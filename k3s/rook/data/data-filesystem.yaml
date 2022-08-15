@@ -13,3 +13,23 @@ spec:
   metadataServer:
     activeCount: 1
     activeStandby: true
+    placement:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: storage-node
+              operator: In
+              values:
+              - "true"
+      tolerations:
+      - key: storage-node
+        operator: Exists
+    priorityClassName: system-cluster-critical
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 4Gi

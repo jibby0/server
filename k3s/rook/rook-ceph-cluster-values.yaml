@@ -38,9 +38,9 @@ toolbox:
 # monitoring requires Prometheus to be pre-installed
 monitoring:
   # enabling will also create RBAC rules to allow Operator to create ServiceMonitors
-  enabled: false
+  enabled: true
   # whether to create the prometheus rules
-  createPrometheusRules: false
+  createPrometheusRules: true
   # the namespace in which to create the prometheus rules, if different from the rook cluster namespace
   # If you have multiple rook-ceph clusters in the same k8s cluster, choose the same namespace (ideally, namespace with prometheus
   # deployed) to set rulesNamespace for all the clusters. Otherwise, you will get duplicate alerts with multiple alert definitions.
@@ -232,29 +232,29 @@ cephClusterSpec:
   resources:
     mgr:
       limits:
-        cpu: "1000m"
+        cpu: "500m"
         memory: "1Gi"
       requests:
-        cpu: "500m"
+        cpu: "250m"
         memory: "512Mi"
     mon:
       limits:
-        cpu: "2000m"
+        cpu: "1000m"
         memory: "2Gi"
       requests:
-        cpu: "1000m"
+        cpu: "500m"
         #memory: "1Gi"
         memory: "500Mi"
     osd:
       limits:
-        cpu: "2000m"
-        memory: "2Gi"
-      requests:
         cpu: "1000m"
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
         memory: "1Gi"
     prepareosd:
       limits:
-        cpu: "2000m"
+        cpu: "1000m"
         memory: "12Gi"
       requests:
         cpu: "500m"
@@ -443,11 +443,26 @@ cephFileSystems:
         activeStandby: true
         resources:
           limits:
-            cpu: "2000m"
-            memory: "4Gi"
+            cpu: "500m"
+            memory: "2Gi"
           requests:
-            cpu: "1000m"
-            memory: "4Gi"
+            cpu: "250m"
+            memory: "1Gi"
+        placement:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                  - key: storage-node
+                    operator: In
+                    values:
+                      - "true"
+          podAffinity:
+          podAntiAffinity:
+          topologySpreadConstraints:
+          tolerations:
+          - key: storage-node
+            operator: Exists
         priorityClassName: system-cluster-critical
     storageClass:
       enabled: true
@@ -507,13 +522,28 @@ cephObjectStores:
           codingChunks: 1
       preservePoolsOnDelete: true
       gateway:
-        port: 80
+        placement:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                  - key: storage-node
+                    operator: In
+                    values:
+                      - "true"
+          podAffinity:
+          podAntiAffinity:
+          topologySpreadConstraints:
+          tolerations:
+          - key: storage-node
+            operator: Exists
+        port: 6980
         resources:
           limits:
-            cpu: "2000m"
+            cpu: "500m"
             memory: "2Gi"
           requests:
-            cpu: "1000m"
+            cpu: "250m"
             memory: "1Gi"
         # securePort: 443
         # sslCertificateRef:

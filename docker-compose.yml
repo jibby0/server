@@ -80,124 +80,150 @@ services:
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
 
-  jekyll:
-    image: jibby0/docker-jekyll-webhook:test
-    deploy:
-      replicas: 2
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.jekyll.tls=true
-        - traefik.http.routers.jekyll.rule=Host(`${DOMAIN}`)
-        - traefik.http.services.jekyll.loadbalancer.server.port=80
-    environment:
-      - TZ=America/New_York
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
-      - REPO=https://github.com/jibby0/blog.git
-    restart: always
-    volumes:
-      - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
+  #jekyll:
+  #  image: jibby0/docker-jekyll-webhook:test
+  #  deploy:
+  #    placement:
+  #      # TODO I don't know why the 2nd replica 502s all the time if I don't do this
+  #      constraints:
+  #        - node.labels.cpu-intensive == true
+  #    replicas: 2
+  #    labels:
+  #      - traefik.enable=true
+  #      - traefik.http.routers.jekyll.tls=true
+  #      - traefik.http.routers.jekyll.rule=Host(`${DOMAIN}`)
+  #      - traefik.http.services.jekyll.loadbalancer.server.port=80
+  #  environment:
+  #    - TZ=America/New_York
+  #    - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+  #    - REPO=https://github.com/jibby0/blog.git
+  #  restart: always
+  #  volumes:
+  #    - ${CONTAINERS_DIR}/jekyll/vendor_cache:/vendor
 
-  postgres:
-    image: postgres:13.2
-    volumes:
-      - ${CONTAINERS_DIR}/postgres/data:/var/lib/postgresql/data
-      - ${CONTAINERS_DIR}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    restart: always
+  # postgres:
+  #   image: postgres:13.2
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.cpu-intensive == true
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/postgres/data:/var/lib/postgresql/data
+  #     - ${CONTAINERS_DIR}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+  #   environment:
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #   restart: always
 
-  nextcloud:
-    image: nextcloud:23.0.0
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.nextcloud.tls=true
-        - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
-        - traefik.http.services.nextcloud.loadbalancer.server.port=80
-    expose:
-      - "80"
-    links:
-      - postgres
-    volumes:
-      - ${CONTAINERS_DIR}/nextcloud:/var/www/html
-    restart: always
+  #nextcloud:
+  #  image: nextcloud:23.0.0
+  #  deploy:
+  #    placement:
+  #      constraints:
+  #        - node.labels.cpu-intensive == true
+  #    labels:
+  #      - traefik.enable=true
+  #      - traefik.http.routers.nextcloud.tls=true
+  #      - traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)
+  #      - traefik.http.services.nextcloud.loadbalancer.server.port=80
+  #  expose:
+  #    - "80"
+  #  links:
+  #    - postgres
+  #    - redis
+  #  volumes:
+  #    - ${CONTAINERS_DIR}/nextcloud:/var/www/html
+  #  environment:
+  #    - REDIS_HOST=redis
+  #  restart: always
 
-  gogs:
-    image: gogs/gogs:0.12.0
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.gogs.tls=true
-        - traefik.http.routers.gogs.rule=Host(`gogs.${DOMAIN}`)
-        - traefik.http.services.gogs.loadbalancer.server.port=3000
-    expose:
-      - "3000"
-    volumes:
-      - ${CONTAINERS_DIR}/gogs:/data
-    # NOTE: My gogs instance isn't happy with postgres. For now, it's a small server
-    # and sqlite is fine, but I should fix this eventually.
-    #links:
-    #  - postgres
-    restart: always
+  #redis:
+  #  image: redis:6.2.6
+  #  deploy:
+  #    placement:
+  #      constraints:
+  #        - node.labels.cpu-intensive == true
+  #  command: redis-server --save 60 1 --loglevel warning
+  #  volumes:
+  #    - ${CONTAINERS_DIR}/redis:/data
+  #  restart: always
 
-  matrix:
-    image: matrixdotorg/synapse:v1.55.2
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.matrix.tls=true
-        - traefik.http.routers.matrix.rule=Host(`matrix.${DOMAIN}`)
-        - traefik.http.services.matrix.loadbalancer.server.port=8008
-    expose:
-      - "8008"
-    links:
-      - postgres
-    # NOTE: These don't directly configure anything anymore.
-    #  They can be used with `migrate_config` to build
-    #  homeserver.yaml
-    # environment:
-    #   - SYNAPSE_SERVER_NAME=matrix.${DOMAIN}
-    #   - SYNAPSE_REPORT_STATS=no
-    #   - SYNAPSE_NO_TLS=true
-    #   - SYNAPSE_ENABLE_REGISTRATION=no
-    #   - SYNAPSE_LOG_LEVEL=INFO
-    #   - SYNAPSE_REGISTRATION_SHARED_SECRET=${POSTGRES_PASSWORD}
-    #   - POSTGRES_DB=synapse
-    #   - POSTGRES_HOST=postgres
-    #   - POSTGRES_USER=synapse
-    #   - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - ${CONTAINERS_DIR}/matrix:/data
-    restart: always
+  # gogs:
+  #   image: gogs/gogs:0.12.0
+  #   deploy:
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.http.routers.gogs.tls=true
+  #       - traefik.http.routers.gogs.rule=Host(`gogs.${DOMAIN}`)
+  #       - traefik.http.services.gogs.loadbalancer.server.port=3000
+  #   expose:
+  #     - "3000"
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/gogs:/data
+  #   # NOTE: My gogs instance isn't happy with postgres. For now, it's a small server
+  #   # and sqlite is fine, but I should fix this eventually.
+  #   #links:
+  #   #  - postgres
+  #   restart: always
 
-  matrix_wellknown:
-    image: adrianrudnik/matrix-wellknown-server:1.0.1
-    volumes:
-      - ${CONTAINERS_DIR}/matrix/wellknown:/var/schema
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.matrix-wellknown.tls=true
-        - traefik.http.routers.matrix-wellknown.rule=Host(`matrix.${DOMAIN}`) && PathPrefix(`/.well-known/matrix/`)
-        - traefik.http.services.matrix-wellknown.loadbalancer.server.port=8080
-    expose:
-      - "8080"
+  # matrix:
+  #   image: matrixdotorg/synapse:v1.55.2
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.cpu-intensive == true
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.http.routers.matrix.tls=true
+  #       - traefik.http.routers.matrix.rule=Host(`matrix.${DOMAIN}`)
+  #       - traefik.http.services.matrix.loadbalancer.server.port=8008
+  #   expose:
+  #     - "8008"
+  #   links:
+  #     - postgres
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/matrix:/data
+  #   restart: always
 
-  selfoss:
-    image: jibby0/selfoss:2.18
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.selfoss.tls=true
-        - traefik.http.routers.selfoss.rule=Host(`selfoss.${DOMAIN}`)
-        - traefik.http.services.selfoss.loadbalancer.server.port=8888
-    expose:
-      - "8888"
-    links:
-      - postgres
-    volumes:
-      - ${CONTAINERS_DIR}/selfoss:/selfoss/data
-    environment:
-      - CRON_PERIOD=5m
-    restart: always
+  # matrix_wellknown:
+  #   image: adrianrudnik/matrix-wellknown-server:1.0.1
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/matrix/wellknown:/var/schema
+  #   deploy:
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.http.routers.matrix-wellknown.tls=true
+  #       - traefik.http.routers.matrix-wellknown.rule=Host(`matrix.${DOMAIN}`) && PathPrefix(`/.well-known/matrix/`)
+  #       - traefik.http.services.matrix-wellknown.loadbalancer.server.port=8080
+  #   expose:
+  #     - "8080"
+
+  # selfoss:
+  #   image: jibby0/selfoss:2.18
+  #   deploy:
+  #     # TODO `postgres` is only accesssible on the same node ????
+  #     placement:
+  #       constraints:
+  #         - node.labels.media-encoding == true
+  #     labels:
+  #       - traefik.enable=true
+  #       - traefik.http.routers.selfoss.tls=true
+  #       - traefik.http.routers.selfoss.rule=Host(`selfoss.${DOMAIN}`)
+  #       - traefik.http.services.selfoss.loadbalancer.server.port=8888
+  #   expose:
+  #     - "8888"
+  #   links:
+  #     - postgres
+  #   volumes:
+  #     - ${CONTAINERS_DIR}/selfoss:/selfoss/data
+  #   environment:
+  #     - CRON_PERIOD=5m
+  #   restart: always
+
+
+
+
+
+
+
+
