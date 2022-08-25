@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`nextcloud.jibby.org`)
+    services:
+    - kind: Service
+      name: nextcloud
+      port: 8080
