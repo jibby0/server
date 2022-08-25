@@ -1,0 +1,25 @@
+# Copy of rook-ceph/servicemonitor/rook-ceph-mgr, with nicer labels.
+# Deploy it in the monitoring namespace as well: cross-namespace servicemonitor discovery is a bit buggy.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    team: rook
+    name: rook-ceph-mgr
+  name: rook-ceph-mgr
+  namespace: monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    interval: 5s
+    path: /metrics
+    port: http-metrics
+  namespaceSelector:
+    matchNames:
+    - rook-ceph
+  selector:
+    matchLabels:
+      app: rook-ceph-mgr
+      #ceph_daemon_id: b
+      rook_cluster: rook-ceph

@@ -31,7 +31,6 @@ spec:
       operator: In
       values:
       - monitoring
-      - rook-ceph
   storage:
     volumeClaimTemplate:
       spec:

@@ -21,7 +21,6 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: proxy
-  #type: LoadBalancer
   type: ClusterIP
   ports:
   - name: nginx-service-port
@@ -36,10 +35,10 @@ metadata:
   name: nginx
 spec:
   entryPoints:
-  - web
+  - websecure
   routes:
   - kind: Rule
-    match: Host(`poggers.jibby.org`)
+    match: Host(`nginx.example.com`)
     services:
     - kind: Service
       name: nginx-service

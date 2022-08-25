@@ -61,3 +61,19 @@ spec:
     protocol: TCP
     port: 80
     targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jekyll
+  namespace: blog
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`jibby.org`)
+    services:
+    - kind: Service
+      name: jekyll-service
+      port: 80

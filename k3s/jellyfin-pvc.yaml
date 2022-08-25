@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config-pvc
+  namespace: plex
+  labels:
+    app: jellyfin
+spec:
+  storageClassName: ceph-block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

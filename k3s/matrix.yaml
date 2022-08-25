@@ -70,3 +70,19 @@ spec:
     protocol: TCP
     port: 8008
     targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: matrix
+  namespace: matrix
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`matrix.jibby.org`)
+    services:
+    - kind: Service
+      name: matrix-service
+      port: 8008

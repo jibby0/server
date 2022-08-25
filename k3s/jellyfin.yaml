@@ -7,29 +7,27 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: plex
+  name: jellyfin
   namespace: plex
 spec:
   selector:
     matchLabels:
-      app: plex
+      app: jellyfin
   replicas: 1
   template:
     metadata:
       labels:
-        app: plex
+        app: jellyfin
     spec:
       containers:
-      - name: plex
-        image: linuxserver/plex:amd64-version-1.26.2.5797-5bd057d2b
+      - name: jellyfin
+        image: jellyfin/jellyfin:10.7.7
         ports:
-        - containerPort: 32400
+        - containerPort: 8096
           name: http-web-svc
         volumeMounts:
         - mountPath: "/config"
           name: config
-        - mountPath: "/config/Library/Application Support/Plex Media Server/Media"
-          name: media-metadata
         - mountPath: "/media"
           name: media
         - mountPath: "/transcodes"
@@ -42,21 +40,27 @@ spec:
         livenessProbe:
           httpGet:
             path: /web/index.html
-            port: 32400
+            port: 8096
           failureThreshold: 5
           initialDelaySeconds: 10
           periodSeconds: 30
           timeoutSeconds: 10
-        resources:
-          limits:
-            nvidia.com/gpu: 1
+        #resources:
+        #  limits:
+        #    nvidia.com/gpu: 1
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: gpu-node
+                operator: In
+                values:
+                - "true"
       volumes:
       - name: config
         persistentVolumeClaim:
-          claimName: plex-config-pvc
-      - name: media-metadata
-        persistentVolumeClaim:
-          claimName: plex-media-metadata-pvc
+          claimName: jellyfin-config-pvc
       - name: media
         persistentVolumeClaim:
           claimName: plex-media-pvc
@@ -68,30 +72,30 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: plex-service
+  name: jellyfin-service
   namespace: plex
 spec:
   selector:
-    app: plex
+    app: jellyfin
   type: ClusterIP
   ports:
-  - name: plex-web-port
+  - name: jellyfin-web-port
     protocol: TCP
-    port: 32400
+    port: 8096
     targetPort: http-web-svc
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: plex
+  name: jellyfin
   namespace: plex
 spec:
   entryPoints:
   - websecure
   routes:
   - kind: Rule
-    match: Host(`plex.jibby.org`)
+    match: Host(`jellyfin.jibby.org`)
     services:
     - kind: Service
-      name: plex-service
-      port: 32400
+      name: jellyfin-service
+      port: 8096

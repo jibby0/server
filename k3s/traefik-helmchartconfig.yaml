@@ -1,0 +1,49 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        exposedPort: 80
+      websecure:
+        exposedPort: 443
+
+    additionalArguments:
+      # Auto cert renewal via cloudflare
+      #- "--certificatesresolvers.letsencrypt.acme.email=some-email-here"
+      - "--certificatesresolvers.letsencrypt.acme.email=joshbicking@comcast.net"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
+      - "--entrypoints.websecure.http.tls.domains[0].main=jibby.org"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.jibby.org"
+
+      - "--log.level=DEBUG"
+      # debug, uncomment for testing
+      #- "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+
+    env:
+      - name: CLOUDFLARE_EMAIL
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare-secrets
+            key: email
+            optional: false
+      - name: CLOUDFLARE_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare-secrets
+            key: api-key
+            optional: false
+
+    persistence:
+      enabled: true
+      storageClass: ceph-block
+
+    # Fix for acme.json file being changed to 660 from 600
+    podSecurityContext:
+      fsGroup: null
