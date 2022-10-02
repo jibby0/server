@@ -1,11 +1,11 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: media-sc
+  name: plex-sc
 parameters:
   clusterID: rook-ceph
-  fsName: media
-  pool: media-data0
+  fsName: plex
+  pool: plex-erasurecoded
   csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
   csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
   csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node

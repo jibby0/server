@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: s3
+  namespace: rook-ceph
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`s3.jibby.org`)
+    services:
+    - kind: Service
+      name: rook-ceph-rgw-ceph-objectstore
+      port: 6980

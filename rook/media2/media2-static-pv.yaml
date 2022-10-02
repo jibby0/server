@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media2-static-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 20Ti
+  csi:
+    controllerExpandSecretRef:
+      name: rook-csi-cephfs-provisioner
+      namespace: rook-ceph
+    driver: rook-ceph.cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      name: rook-csi-cephfs-node
+      namespace: rook-ceph
+    volumeAttributes:
+      clusterID: rook-ceph
+      fsName: media2
+      pool: media2-erasurecoded
+      storage.kubernetes.io/csiProvisionerIdentity: 1662922724498-8081-rook-ceph.cephfs.csi.ceph.com
+      subvolumeName: csi-vol-14a8ab27-3495-11ed-8f63-2e9244479848
+      subvolumePath: /volumes/csi/csi-vol-14a8ab27-3495-11ed-8f63-2e9244479848/7d1cbe20-dcdd-4f4f-b6b9-2424d6a2a9a2
+    volumeHandle: 0001-0009-rook-ceph-0000000000000005-14a8ab27-3495-11ed-8f63-2e9244479848
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: media2-sc
+  volumeMode: Filesystem

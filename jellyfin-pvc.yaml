@@ -12,3 +12,18 @@ spec:
   resources:
     requests:
       storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media2-pvc
+  namespace: plex
+spec:
+  storageClassName: media2-sc
+  volumeName: media2-static-pv
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Ti

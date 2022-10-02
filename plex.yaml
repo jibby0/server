@@ -39,6 +39,8 @@ spec:
           value: "1000"
         - name: PGID
           value: "1000"
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "all"
         livenessProbe:
           httpGet:
             path: /web/index.html
@@ -56,10 +58,10 @@ spec:
           claimName: plex-config-pvc
       - name: media-metadata
         persistentVolumeClaim:
-          claimName: plex-media-metadata-pvc
+          claimName: plex-metadata-pvc
       - name: media
         persistentVolumeClaim:
-          claimName: plex-media-pvc
+          claimName: plex-pvc
       - name: tmpfs
         emptyDir:
           medium: Memory

@@ -15,42 +15,13 @@ spec:
       storage: 50Gi
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: plex-media-metadata-static-pv
-spec:
-  accessModes:
-  - ReadWriteMany
-  capacity:
-    storage: 20Ti
-  csi:
-    controllerExpandSecretRef:
-      name: rook-csi-cephfs-provisioner
-      namespace: rook-ceph
-    driver: rook-ceph.cephfs.csi.ceph.com
-    nodeStageSecretRef:
-      name: rook-csi-cephfs-node
-      namespace: rook-ceph
-    volumeAttributes:
-      clusterID: rook-ceph
-      fsName: media
-      pool: media-data0
-      storage.kubernetes.io/csiProvisionerIdentity: 1657147448506-8081-rook-ceph.cephfs.csi.ceph.com
-      subvolumeName: csi-vol-9b2f40f9-0613-11ed-8662-4a986e7745e3
-      subvolumePath: /volumes/csi/csi-vol-9b2f40f9-0613-11ed-8662-4a986e7745e3/07b0a3bf-e458-4442-90df-f70aaa971da6
-    volumeHandle: 0001-0009-rook-ceph-0000000000000002-9b2f40f9-0613-11ed-8662-4a986e7745e3
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: media-sc
-  volumeMode: Filesystem
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: plex-media-metadata-pvc
+  name: plex-metadata-pvc
   namespace: plex
 spec:
-  storageClassName: media-sc
-  volumeName: plex-media-metadata-static-pv
+  storageClassName: plex-metadata-sc
+  volumeName: plex-metadata-static-pv
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
@@ -59,45 +30,16 @@ spec:
       storage: 20Ti
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: plex-media-static-pv
-spec:
-  accessModes:
-  - ReadWriteMany
-  capacity:
-    storage: 20Ti
-  csi:
-    controllerExpandSecretRef:
-      name: rook-csi-cephfs-provisioner
-      namespace: rook-ceph
-    driver: rook-ceph.cephfs.csi.ceph.com
-    nodeStageSecretRef:
-      name: rook-csi-cephfs-node
-      namespace: rook-ceph
-    volumeAttributes:
-      clusterID: rook-ceph
-      fsName: media
-      pool: media-data0
-      storage.kubernetes.io/csiProvisionerIdentity: 1657147447431-8081-rook-ceph.cephfs.csi.ceph.com
-      subvolumeName: csi-vol-474d5ba4-fe4f-11ec-9369-b20c27405718
-      subvolumePath: /volumes/csi/csi-vol-474d5ba4-fe4f-11ec-9369-b20c27405718/ed910e5e-ebd1-40b5-9b58-464534002120
-    volumeHandle: 0001-0009-rook-ceph-0000000000000002-474d5ba4-fe4f-11ec-9369-b20c27405718
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: media-sc
-  volumeMode: Filesystem
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: plex-media-pvc
+  name: plex-pvc
   namespace: plex
 spec:
-  storageClassName: media-sc
-  volumeName: plex-media-static-pv
+  storageClassName: plex-sc
+  volumeName: plex-static-pv
   volumeMode: Filesystem
   accessModes:
-    - ReadWriteMany
+    - ReadOnlyMany
   resources:
     requests:
       storage: 20Ti

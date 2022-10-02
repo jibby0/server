@@ -1,15 +1,24 @@
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
-  name: media
+  name: media2
   namespace: rook-ceph
 spec:
   metadataPool:
     replicated:
       size: 3
+      deviceClass: ssd
   dataPools:
-    - replicated:
-        size: 1
+    - name: default
+      replicated:
+        size: 3
+      deviceClass: hdd
+    - name: erasurecoded
+      erasureCoded:
+        dataChunks: 2
+        codingChunks: 1
+      deviceClass: hdd
+  preserveFilesystemOnDelete: true
   metadataServer:
     activeCount: 1
     activeStandby: true
@@ -26,10 +35,11 @@ spec:
       - key: storage-node
         operator: Exists
     priorityClassName: system-cluster-critical
+    # 4GiB is recommended
     resources:
       limits:
-        cpu: "2"
-        memory: 4Gi
+        cpu: "300m"
+        memory: 1Gi
       requests:
-        cpu: "1"
-        memory: 4Gi
+        cpu: "100m"
+        memory: 500Mi

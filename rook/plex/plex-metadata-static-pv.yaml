@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: rook-ceph.cephfs.csi.ceph.com
+  name: plex-metadata-static-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 20Ti
+  csi:
+    controllerExpandSecretRef:
+      name: rook-csi-cephfs-provisioner
+      namespace: rook-ceph
+    driver: rook-ceph.cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      name: rook-csi-cephfs-node
+      namespace: rook-ceph
+    volumeAttributes:
+      clusterID: rook-ceph
+      fsName: plex
+      pool: plex-erasurecoded
+      storage.kubernetes.io/csiProvisionerIdentity: 1662922724498-8081-rook-ceph.cephfs.csi.ceph.com
+      subvolumeName: csi-vol-a24996ad-3789-11ed-8f63-2e9244479848
+      subvolumePath: /volumes/csi/csi-vol-a24996ad-3789-11ed-8f63-2e9244479848/4bf9ff78-453e-48aa-99d9-a06ffc94d7ff
+    volumeHandle: 0001-0009-rook-ceph-0000000000000006-a24996ad-3789-11ed-8f63-2e9244479848
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: plex-metadata-sc
+  volumeMode: Filesystem

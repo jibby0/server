@@ -1,0 +1,45 @@
+apiVersion: ceph.rook.io/v1
+kind: CephFilesystem
+metadata:
+  name: plex
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    replicated:
+      size: 3
+      deviceClass: ssd
+  dataPools:
+    - name: default
+      replicated:
+        size: 3
+      deviceClass: hdd
+    - name: erasurecoded
+      erasureCoded:
+        dataChunks: 2
+        codingChunks: 1
+      deviceClass: hdd
+  preserveFilesystemOnDelete: true
+  metadataServer:
+    activeCount: 1
+    activeStandby: true
+    placement:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: storage-node
+              operator: In
+              values:
+              - "true"
+      tolerations:
+      - key: storage-node
+        operator: Exists
+    priorityClassName: system-cluster-critical
+    # 4GiB is recommended
+    resources:
+      limits:
+        cpu: "300m"
+        memory: 1Gi
+      requests:
+        cpu: "100m"
+        memory: 500Mi

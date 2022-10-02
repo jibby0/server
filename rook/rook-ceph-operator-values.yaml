@@ -104,7 +104,7 @@ csi:
 
   # Set logging level for csi containers.
   # Supported values from 0 to 5. 0 for general useful logs, 5 for trace level verbosity.
-  #logLevel: 0
+  logLevel: 5
   # CSI RBD plugin daemonset update strategy, supported values are OnDelete and RollingUpdate.
   # Default value is RollingUpdate.
   #rbdPluginUpdateStrategy: OnDelete
@@ -385,7 +385,7 @@ enableDiscoveryDaemon: false
 cephCommandsTimeoutSeconds: "15"
 
 ## if true, run rook operator on the host network
-useOperatorHostNetwork: true
+useOperatorHostNetwork: false
 
 ## Rook Discover configuration
 ## toleration: NoSchedule, PreferNoSchedule or NoExecute

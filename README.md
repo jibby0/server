@@ -13,13 +13,49 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install --create-namespace --namespace
 
 ## things in the rook folder
 
-## reference
+## Sharing 1 CephFS instance between multiple PVCs
+
 https://github.com/rook/rook/blob/677d3fa47f21b07245e2e4ab6cc964eb44223c48/Documentation/Storage-Configuration/Shared-Filesystem-CephFS/filesystem-storage.md
+
+Create CephFilesystem
+Create SC backed by Filesystem & Pool
+Ensure the CSI subvolumegroup was created. If not, `ceph fs subvolumegroup create <fsname> csi`
+Create PVC without a specified PV: PV will be auto-created
+Set created PV to ReclaimPolicy: Retain
+Create a new, better-named PVC
 
 If important data is on CephBlockPool-backed PVCs, don't forget to set the PV's persistentVolumeReclaimPolicy to `Retain`.
 
 ## tolerations
 If your setup divides k8s nodes into ceph & non-ceph nodes (using a label, like `storage-node=true`), ensure labels & a toleration are set properly (`storage-node=false`, with a toleration checking for `storage-node`) so non-ceph nodes still run PV plugin Daemonsets.
+
+## CephFS w/ EC backing pool
+
+EC-backed filesystems require a regular replicated pool as a default
+
+https://lists.ceph.io/hyperkitty/list/ceph-users@ceph.io/thread/Y6T7OVTC4XAAWMFTK3MYGC7TB6G47OCH/
+https://tracker.ceph.com/issues/42450
+
+
+## ObjectStore
+
+If hostNetwork is enabled on the cluster, ensure rook-ceph-operator is not running with hostNetwork enable. It doesn't need host network access to orchestrate the cluster, & impedes orchestration of objectstores & associated resources.
+
+## public s3-interface bucket listing w/ HTML
+
+This is great for setting up easy public downloads.
+
+- Create a user (rook/buckets/user-josh.yaml)
+- kubectl -n rook-ceph get secret rook-ceph-object-user-ceph-objectstore-josh -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}
+- Create bucket (rook/buckets/bucket.py::create_bucket)
+- Set policy (rook/buckets/bucket.py::set_public_read_policy)
+- Upload file
+```python
+from bucket import *
+conn = connect()
+conn.upload_file('path/to/s3-bucket-listing/index.html', 'public', 'index.html', ExtraArgs={'ContentType': 'text/html'})
+```
+
 
 # nvidia driver (on debian)
 curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey |   sudo apt-key add -
@@ -79,7 +115,22 @@ Ensure the pods on the namespace are Running.
 
 Test GPU passthrough by applying examples/cuda-pod.yaml, then exec-ing into it & running `nvidia-smi`.
 
-Currently, 1 GPU = 1 pod can use the GPU.
+## Sharing GPU
+
+https://github.com/NVIDIA/k8s-device-plugin#shared-access-to-gpus-with-cuda-time-slicing
+
+```yaml
+version: v1
+sharing:
+  timeSlicing:
+    renameByDefault: false
+    failRequestsGreaterThanOne: false
+    resources:
+    - name: nvidia.com/gpu
+      replicas: 5
+```
+
+$ helm upgrade -i nvdp nvdp/nvidia-device-plugin ... --set-file config.map.config=nvidia-device-plugin-config.yaml
 
 # ceph client
 

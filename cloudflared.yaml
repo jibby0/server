@@ -76,4 +76,6 @@ data:
       service: http://plex-service.plex.svc.cluster.local:32400
     - hostname: jellyfin.jibby.org
       service: http://jellyfin-service.plex.svc.cluster.local:8096
+    - hostname: s3.jibby.org
+      service: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc.cluster.local:6980
     - service: http_status:404
