@@ -21,6 +21,8 @@ spec:
       - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
       - "--entrypoints.websecure.http.tls.domains[0].main=jibby.org"
       - "--entrypoints.websecure.http.tls.domains[0].sans=*.jibby.org"
+      - "--entrypoints.web.http.redirections.entryPoint.to=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
       - "--log.level=DEBUG"
       # debug, uncomment for testing
