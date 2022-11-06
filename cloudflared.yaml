@@ -78,4 +78,6 @@ data:
       service: http://jellyfin-service.plex.svc.cluster.local:8096
     - hostname: s3.jibby.org
       service: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc.cluster.local:6980
+    - hostname: miniflux.jibby.org
+      service: http://miniflux-service.miniflux.svc.cluster.local:8080
     - service: http_status:404
