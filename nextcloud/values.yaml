@@ -1,3 +1,6 @@
+# helm repo add nextcloud https://nextcloud.github.io/helm/
+# helm upgrade --install nextcloud nextcloud/nextcloud -n nextcloud -f values.yaml --version 2.14.4
+
 ## Official nextcloud image version
 ## ref: https://hub.docker.com/r/library/nextcloud/tags/
 ##
@@ -157,11 +160,16 @@ nextcloud:
   ##
   ## Extra environment variables
   extraEnv:
-  #  - name: SOME_SECRET_ENV
-  #    valueFrom:
-  #      secretKeyRef:
-  #        name: nextcloud
-  #        key: secret_key
+    - name: REDIS_HOST
+      valueFrom:
+        secretKeyRef:
+          name: redis-client-secret
+          key: REDIS_HOST
+    - name: REDIS_HOST_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: redis-client-secret
+          key: REDIS_HOST_PASSWORD
 
   # Extra init containers that runs before pods start.
   extraInitContainers: []
