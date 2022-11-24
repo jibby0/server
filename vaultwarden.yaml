@@ -25,6 +25,8 @@ spec:
         ports:
         - containerPort: 80
           name: http-web-svc
+        - containerPort: 3012
+          name: http-sock-svc
         envFrom:
         - secretRef:
             name: vaultwarden-secret
@@ -62,6 +64,10 @@ spec:
     protocol: TCP
     port: 80
     targetPort: http-web-svc
+  - name: vaultwarden-sock-port
+    protocol: TCP
+    port: 3012
+    targetPort: http-sock-svc
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -78,3 +84,9 @@ spec:
     - kind: Service
       name: vaultwarden-service
       port: 80
+  - kind: Rule
+    match: Host(`vaultwarden.jibby.org`) && Path(`/notifications/hub`)
+    services:
+    - kind: Service
+      name: vaultwarden-service
+      port: 3012
