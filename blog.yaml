@@ -77,3 +77,17 @@ spec:
     - kind: Service
       name: jekyll-service
       port: 80
+    middlewares:
+    - name: well-known-redirect
+# HACK: for mastodon
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: well-known-redirect
+  namespace: blog
+spec:
+  redirectRegex:
+    regex: ^https://jibby.org/.well-known/webfinger(.*)
+    replacement: https://mastodon.jibby.org/.well-known/webfinger${1}
+    permanent: true

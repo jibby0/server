@@ -39,7 +39,7 @@ spec:
   volumeName: plex-static-pv
   volumeMode: Filesystem
   accessModes:
-    - ReadOnlyMany
+    - ReadWriteMany
   resources:
     requests:
       storage: 20Ti

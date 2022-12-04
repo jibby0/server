@@ -82,8 +82,11 @@ data:
       service: http://miniflux-service.miniflux.svc.cluster.local:8080
     - hostname: vaultwarden.jibby.org
       service: http://vaultwarden-service.vaultwarden.svc.cluster.local:80
-    # Rules can match the request's path to a regular expression:
     - hostname: vaultwarden.jibby.org
       path: /notifications/hub.*
       service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
+    - hostname: mastodon.jibby.org
+      service: http://mastodon-service.mastodon.svc.cluster.local:3000
+    - hostname: streaming-mastodon.jibby.org
+      service: http://mastodon-service.mastodon.svc.cluster.local:4000
     - service: http_status:404
