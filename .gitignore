@@ -3,3 +3,4 @@ htpasswd
 playbook.retry
 .venv
 hosts
+secret-*.yaml
