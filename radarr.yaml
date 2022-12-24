@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sonarr
+  name: radarr
   namespace: plex
 spec:
   selector:
     matchLabels:
-      app: sonarr
+      app: radarr
   replicas: 1
   template:
     metadata:
       labels:
-        app: sonarr
+        app: radarr
     spec:
       containers:
-      - name: sonarr
-        image: lscr.io/linuxserver/sonarr:develop-4.0.0.307-ls362
+      - name: radarr
+        image: lscr.io/linuxserver/radarr:develop-4.3.1.6822-ls79
         ports:
-        - containerPort: 8989
+        - containerPort: 7878
           name: http-web-svc
         env:
         - name: TZ
@@ -38,19 +38,19 @@ spec:
           claimName: plex-pvc
       - name: config
         persistentVolumeClaim:
-          claimName: sonarr-pvc
+          claimName: radarr-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sonarr-service
+  name: radarr-service
   namespace: plex
 spec:
   selector:
-    app: sonarr
+    app: radarr
   type: ClusterIP
   ports:
-  - name: sonarr-web-port
+  - name: radarr-web-port
     protocol: TCP
-    port: 8989
+    port: 7878
     targetPort: http-web-svc
