@@ -183,6 +183,6 @@ Service will then be available on port 1234 of any k8s node.
 
 # Still to do
 
-- deluge?
+- deluge
 - gogs ssh ingress (can't go through cloudflare without cloudflared on the client)
 - Something better than `expose` for accessing internal services
