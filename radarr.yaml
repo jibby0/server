@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: radarr
-        image: lscr.io/linuxserver/radarr:develop-4.3.1.6822-ls79
+        image: lscr.io/linuxserver/radarr:nightly-4.4.0.6875-ls428
         ports:
         - containerPort: 7878
           name: http-web-svc
