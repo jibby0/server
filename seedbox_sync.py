@@ -27,13 +27,14 @@ processed = {f for f in r.stdout.decode().split('\n') if f}
 new = available - processed
 
 for new_file in new:
+    # Be super cautious about empty file names, wouldn't want to `rm -rf` a folder by accident
     if not new_file:
         continue
 
     print(f"Processing: {new_file}")
-    subprocess.run(["bash", "-c", f"rsync -rsvv {host}:{host_data_path}/{new_file} {local_working_path}"], check=True)
-    r = subprocess.run(["bash", "-c", f"touch {local_metadata_path}/{new_file}"], check=True)
+    subprocess.run(["bash", "-c", f"rsync -rsvv '{host}:{host_data_path}/{new_file}' '{local_working_path}'"], check=True)
+    r = subprocess.run(["bash", "-c", f"touch '{local_metadata_path}/{new_file}'"], check=True)
 
     print(f"Moving to ready: {new_file}")
-    subprocess.run(["bash", "-c", f"rsync -r {local_working_path}/{new_file} {local_data_path}"], check=True)
-    subprocess.run(["bash", "-c", f"rm -rf {local_working_path}/{new_file}"], check=True)
+    subprocess.run(["bash", "-c", f"rsync -r '{local_working_path}/{new_file}' '{local_data_path}'"], check=True)
+    subprocess.run(["bash", "-c", f"rm -rf '{local_working_path}/{new_file}'"], check=True)
