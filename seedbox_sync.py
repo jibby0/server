@@ -32,9 +32,9 @@ for new_file in new:
         continue
 
     print(f"Processing: {new_file}")
-    subprocess.run(["bash", "-c", f"rsync -rsvv '{host}:{host_data_path}/{new_file}' '{local_working_path}'"], check=True)
-    r = subprocess.run(["bash", "-c", f"touch '{local_metadata_path}/{new_file}'"], check=True)
+    subprocess.run(["rsync", "-rsvv", f'{host}:{host_data_path}/{new_file}', f'{local_working_path}'], check=True)
+    r = subprocess.run(["touch", f'{local_metadata_path}/{new_file}'], check=True)
 
     print(f"Moving to ready: {new_file}")
-    subprocess.run(["bash", "-c", f"rsync -r '{local_working_path}/{new_file}' '{local_data_path}'"], check=True)
-    subprocess.run(["bash", "-c", f"rm -rf '{local_working_path}/{new_file}'"], check=True)
+    subprocess.run(["rsync", "-r", f'{local_working_path}/{new_file}', f'{local_data_path}'], check=True)
+    subprocess.run(["rm", "-rf", f'{local_working_path}/{new_file}'], check=True)
