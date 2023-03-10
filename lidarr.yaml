@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: lidarr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      containers:
+      - name: lidarr
+        image: lscr.io/linuxserver/lidarr:develop-1.1.3.2982-ls75
+        ports:
+        - containerPort: 8686
+          name: http-web-svc
+        env:
+        - name: TZ
+          value: America/New_York
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: "/plex"
+          name: plex
+        - mountPath: "/config"
+          name: config
+      volumes:
+      - name: plex
+        persistentVolumeClaim:
+          claimName: plex-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: lidarr-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr-service
+  namespace: plex
+spec:
+  selector:
+    app: lidarr
+  type: ClusterIP
+  ports:
+  - name: lidarr-web-port
+    protocol: TCP
+    port: 8686
+    targetPort: http-web-svc

@@ -170,6 +170,10 @@ nextcloud:
         secretKeyRef:
           name: redis-client-secret
           key: REDIS_HOST_PASSWORD
+    # This will only set apache's RemoteIPTrustedProxy, not
+    # RemoteIPInternalProxy. Local IPs will not be passed through.
+    - name: TRUSTED_PROXIES
+      value: "10.42.0.0/16,127.0.0.1"
 
   # Extra init containers that runs before pods start.
   extraInitContainers: []

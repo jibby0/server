@@ -49,3 +49,9 @@ spec:
     # Fix for acme.json file being changed to 660 from 600
     podSecurityContext:
       fsGroup: null
+
+    service:
+      # type: ClusterIP
+      spec:
+        externalTrafficPolicy: Local
+    hostNetwork: true

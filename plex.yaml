@@ -62,6 +62,7 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: plex-pvc
+          readOnly: true
       - name: tmpfs
         emptyDir:
           medium: Memory
