@@ -1,3 +1,9 @@
+# k3s + rook Homelab
+
+_Writeup still a WIP, please pardon the dust._
+
+_Below is mostly braindumps & rough commands for creating/tweaking these services. Formal writeup coming soon!_
+
 # k3s
 
 ```
