@@ -85,8 +85,8 @@ data:
     - hostname: vaultwarden.jibby.org
       path: /notifications/hub.*
       service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
-    - hostname: mastodon.jibby.org
-      service: http://mastodon-service.mastodon.svc.cluster.local:3000
-    - hostname: streaming-mastodon.jibby.org
-      service: http://mastodon-service.mastodon.svc.cluster.local:4000
+    # - hostname: mastodon.jibby.org
+    #   service: http://mastodon-service.mastodon.svc.cluster.local:3000
+    # - hostname: streaming-mastodon.jibby.org
+    #   service: http://mastodon-service.mastodon.svc.cluster.local:4000
     - service: http_status:404

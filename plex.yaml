@@ -21,7 +21,10 @@ spec:
     spec:
       containers:
       - name: plex
-        image: linuxserver/plex:amd64-version-1.30.2.6563-3d4dc0cce
+        image: linuxserver/plex:amd64-version-1.32.2.7100-248a2daf0
+        # for debugging
+        # command: ["/bin/sh"]
+        # args: ["-c", "sleep 3600"]
         ports:
         - containerPort: 32400
           name: http-web-svc

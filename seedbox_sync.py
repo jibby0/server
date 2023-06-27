@@ -1,6 +1,3 @@
-import subprocess
-import sys
-
 # Usage: sonarr_sync.py my-seedbox /seedbox/path/to/data /local/working /local/metadata /local/data
 # Get all file names in HOST:HOST_DATA_PATH
 # Get all previously processed file names in LOCAL_METADATA_PATH
@@ -9,6 +6,12 @@ import sys
 #   Copy file to LOCAL_WORKING_PATH (used in case of transfer failure)
 #   Add file name to LOCAL_METADATA_PATH
 #   Move file to LOCAL_DATA_PATH
+
+# */1 * * * * /usr/bin/run-one /usr/bin/python3 /path/to/seedbox_sync.py <seedbox host> /seedbox/path/to/completed/ /local/path/to/downloading /local/path/to/processed /local/path/to/ready 2>&1 | /usr/bin/logger -t seedbox
+
+import subprocess
+import sys
+
 
 if len(sys.argv) != 6:
     print("One or more args are undefined")

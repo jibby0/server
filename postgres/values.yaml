@@ -1,3 +1,8 @@
+# helm upgrade --install postgres oci://registry-1.docker.io/bitnamicharts/postgresql -n postgres -f values.yaml --version 11.6.7
+
+# Dump a DB from a pod to disk
+# kubectl -n postgres exec -it postgres-postgresql-0 -- bash -c 'PGPASSWORD=<password> pg_dump -U <user> <db name>' > /path/to/db.pgdump
+
 ## @section Global parameters
 ## Please, note that this will override the parameters, including dependencies, configured to use the global value
 ##

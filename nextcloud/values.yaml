@@ -1,12 +1,28 @@
 # helm repo add nextcloud https://nextcloud.github.io/helm/
-# helm upgrade --install nextcloud nextcloud/nextcloud -n nextcloud -f values.yaml --version 2.14.4
+# helm upgrade --install nextcloud nextcloud/nextcloud -n nextcloud -f values.yaml --version 3.5.14
+
+# Upgrading:
+# su -s /bin/bash - www-data
+# cd /var/www/html
+# PHP_MEMORY_LIMIT=512M ./occ upgrade
+
+# Forwarding IPs requires:
+#
+#  'trusted_proxies' =>
+#  array (
+#    0 => '10.42.0.0/16',
+#    1 => '127.0.0.1',
+#  ),
+#  'overwritecondaddr' => '^10\.42\.[0-9]+\.[0-9]+$',
+#
+# For whatever your ingress is.
 
 ## Official nextcloud image version
 ## ref: https://hub.docker.com/r/library/nextcloud/tags/
 ##
 image:
   repository: nextcloud
-  tag: 24.0.1-apache
+  tag: 26.0.3-apache
   pullPolicy: IfNotPresent
   # pullSecrets:
   #   - myRegistrKeySecretName
@@ -15,6 +31,7 @@ nameOverride: ""
 fullnameOverride: ""
 podAnnotations: {}
 deploymentAnnotations: {}
+deploymentLabels: {}
 
 # Number of replicas to be deployed
 replicaCount: 1
@@ -32,8 +49,8 @@ ingress:
   #  nginx.ingress.kubernetes.io/server-snippet: |-
   #    server_tokens off;
   #    proxy_hide_header X-Powered-By;
-
-  #    rewrite ^/.well-known/webfinger /public.php?service=webfinger last;
+  #    rewrite ^/.well-known/webfinger /index.php/.well-known/webfinger last;
+  #    rewrite ^/.well-known/nodeinfo /index.php/.well-known/nodeinfo last;
   #    rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
   #    rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json;
   #    location = /.well-known/carddav {
@@ -69,7 +86,7 @@ lifecycle: {}
   # preStopCommand: []
 
 phpClientHttpsFix:
-  enabled: true
+  enabled: false
   protocol: https
 
 nextcloud:
@@ -80,14 +97,14 @@ nextcloud:
   existingSecret:
     enabled: false
     # secretName: nameofsecret
-    # usernameKey: username
-    # passwordKey: password
-    # tokenKey: serverinfo_token
-    # smtpUsernameKey: smtp_username
-    # smtpPasswordKey: smtp_password
+    # usernameKey: nextcloud-username
+    # passwordKey: nextcloud-password
+    # tokenKey: nextcloud-token
+    # smtpUsernameKey: smtp-username
+    # smtpPasswordKey: smtp-password
   update: 0
   # If web server is not binding default port, you can define it
-  # containerPort: 8080
+  containerPort: 80
   datadir: /var/www/html/data
   persistence:
     subPath:
@@ -170,16 +187,21 @@ nextcloud:
         secretKeyRef:
           name: redis-client-secret
           key: REDIS_HOST_PASSWORD
-    # This will only set apache's RemoteIPTrustedProxy, not
-    # RemoteIPInternalProxy. Local IPs will not be passed through.
-    - name: TRUSTED_PROXIES
-      value: "10.42.0.0/16,127.0.0.1"
 
   # Extra init containers that runs before pods start.
   extraInitContainers: []
   #  - name: do-something
   #    image: busybox
   #    command: ['do', 'something']
+
+  # Extra sidecar containers.
+  extraSidecarContainers: []
+  #  - name: nextcloud-logger
+  #    image: busybox
+  #    command: [/bin/sh, -c, 'while ! test -f "/run/nextcloud/data/nextcloud.log"; do sleep 1; done; tail -n+1 -f /run/nextcloud/data/nextcloud.log']
+  #    volumeMounts:
+  #    - name: nextcloud-data
+  #      mountPath: /run/nextcloud/data
 
   # Extra mounts for the pods. Example shown is for connecting a legacy NFS volume
   # to NextCloud pods in Kubernetes. This can then be configured in External Storage
@@ -193,12 +215,20 @@ nextcloud:
   #  - name: nfs
   #    mountPath: "/legacy_data"
 
-  # Extra secuurityContext parameters. For example you may need to define runAsNonRoot directive
-  # extraSecurityContext:
-  #   runAsUser: "33"
-  #   runAsGroup: "33"
+  # Set securityContext parameters for the nextcloud CONTAINER only (will not affect nginx container).
+  # For example, you may need to define runAsNonRoot directive
+  securityContext: {}
+  #   runAsUser: 33
+  #   runAsGroup: 33
   #   runAsNonRoot: true
-  #   readOnlyRootFilesystem: true
+  #   readOnlyRootFilesystem: false
+
+  # Set securityContext parameters for the entire pod. For example, you may need to define runAsNonRoot directive
+  podSecurityContext: {}
+  #   runAsUser: 33
+  #   runAsGroup: 33
+  #   runAsNonRoot: true
+  #   readOnlyRootFilesystem: false
 
 nginx:
   ## You need to set an fpm version of the image for nextcloud if you want to use nginx!
@@ -216,13 +246,18 @@ nginx:
 
   resources: {}
 
+  # Set nginx container securityContext parameters. For example, you may need to define runAsNonRoot directive
+  securityContext: {}
+  # the nginx alpine container default user is 82
+  #   runAsUser: 82
+  #   runAsGroup: 33
+  #   runAsNonRoot: true
+  #   readOnlyRootFilesystem: true
+
 internalDatabase:
   enabled: false
   name: nextcloud
 
-##
-## External database configuration
-##
 externalDatabase:
   enabled: true
 
@@ -250,15 +285,21 @@ externalDatabase:
 
 ##
 ## MariaDB chart configuration
+## ref: https://github.com/bitnami/charts/tree/main/bitnami/mariadb
 ##
 mariadb:
-  ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this to false and configure the externalDatabase parameters
+  ## Whether to deploy a mariadb server from the bitnami mariab db helm chart
+  # to satisfy the applications database requirements. if you want to deploy this bitnami mariadb, set this and externalDatabase to true
+  # To use an ALREADY DEPLOYED mariadb database, set this to false and configure the externalDatabase parameters
   enabled: false
 
   auth:
     database: nextcloud
     username: nextcloud
     password: changeme
+    # Use existing secret (auth.rootPassword, auth.password, and auth.replicationPassword will be ignored).
+    # secret must contain the keys mariadb-root-password, mariadb-replication-password and mariadb-password
+    existingSecret: ""
 
   architecture: standalone
 
@@ -268,30 +309,45 @@ mariadb:
   primary:
     persistence:
       enabled: false
+      # Use an existing Persistent Volume Claim (must be created ahead of time)
+      # existingClaim: ""
       # storageClass: ""
       accessMode: ReadWriteOnce
       size: 8Gi
 
 ##
 ## PostgreSQL chart configuration
-## for more options see https://github.com/bitnami/charts/tree/master/bitnami/postgresql
+## for more options see https://github.com/bitnami/charts/tree/main/bitnami/postgresql
 ##
 postgresql:
   enabled: false
   global:
     postgresql:
+      # global.postgresql.auth overrides postgresql.auth
       auth:
         username: nextcloud
         password: changeme
         database: nextcloud
+        # Name of existing secret to use for PostgreSQL credentials.
+        # auth.postgresPassword, auth.password, and auth.replicationPassword will be ignored and picked up from this secret.
+        # secret might also contains the key ldap-password if LDAP is enabled.
+        # ldap.bind_password will be ignored and picked from this secret in this case.
+        existingSecret: ""
+        # Names of keys in existing secret to use for PostgreSQL credentials
+        secretKeys:
+          adminPasswordKey: ""
+          userPasswordKey: ""
+          replicationPasswordKey: ""
   primary:
     persistence:
       enabled: false
+      # Use an existing Persistent Volume Claim (must be created ahead of time)
+      # existingClaim: ""
       # storageClass: ""
 
 ##
 ## Redis chart configuration
-## for more options see https://github.com/bitnami/charts/tree/master/bitnami/redis
+## for more options see https://github.com/bitnami/charts/tree/main/bitnami/redis
 ##
 
 redis:
@@ -299,49 +355,34 @@ redis:
   auth:
     enabled: true
     password: 'changeme'
+    # name of an existing secret with Redis® credentials (instead of auth.password), must be created ahead of time
+    existingSecret: ""
+    # Password key to be retrieved from existing secret
+    existingSecretPasswordKey: ""
+
 
 ## Cronjob to execute Nextcloud background tasks
-## ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#webcron
+## ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron
 ##
 cronjob:
-  enabled: true
-  # Nexcloud image is used as default but only curl is needed
-  image: {}
-    # repository: nextcloud
-    # tag: 16.0.3-apache
-    # pullPolicy: IfNotPresent
-    # pullSecrets:
-    #   - myRegistrKeySecretName
-  # Every 5 minutes
-  # Note: Setting this to any any other value than 5 minutes might
-  #  cause issues with how nextcloud background jobs are executed
-  schedule: "*/5 * * * *"
-  annotations: {}
-  # Set curl's insecure option if you use e.g. self-signed certificates
-  curlInsecure: false
-  failedJobsHistoryLimit: 5
-  successfulJobsHistoryLimit: 2
-  # If not set, nextcloud deployment one will be set
-  # resources:
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-    #  cpu: 100m
-    #  memory: 128Mi
+  enabled: false
 
-  # If not set, nextcloud deployment one will be set
-  # nodeSelector: {}
+  ## Cronjob sidecar resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources: {}
 
-  # If not set, nextcloud deployment one will be set
-  # tolerations: []
-
-  # If not set, nextcloud deployment one will be set
-  # affinity: {}
+  # Allow configuration of lifecycle hooks
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
+  lifecycle: {}
+    # postStartCommand: []
+    # preStopCommand: []
+  # Set securityContext parameters. For example, you may need to define runAsNonRoot directive
+  securityContext: {}
+  #   runAsUser: 33
+  #   runAsGroup: 33
+  #   runAsNonRoot: true
+  #   readOnlyRootFilesystem: true
 
 service:
   type: ClusterIP
@@ -400,14 +441,14 @@ resources: {}
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
 livenessProbe:
-  enabled: true
+  enabled: false
   initialDelaySeconds: 10
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
   successThreshold: 1
 readinessProbe:
-  enabled: true
+  enabled: false
   initialDelaySeconds: 10
   periodSeconds: 10
   timeoutSeconds: 5
@@ -451,11 +492,15 @@ metrics:
   # Currently you still need to set the token manually in your nextcloud install
   token: ""
   timeout: 5s
+  # if set to true, exporter skips certificate verification of Nextcloud server.
+  tlsSkipVerify: false
 
   image:
     repository: xperimental/nextcloud-exporter
-    tag: 0.5.1
+    tag: 0.6.0
     pullPolicy: IfNotPresent
+    # pullSecrets:
+    #   - myRegistrKeySecretName
 
   ## Metrics exporter resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
@@ -477,8 +522,43 @@ metrics:
       prometheus.io/port: "9205"
     labels: {}
 
+  ## Prometheus Operator ServiceMonitor configuration
+  ##
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled Create ServiceMonitor Resource for scraping metrics using PrometheusOperator
+    ##
+    enabled: false
+
+    ## @param metrics.serviceMonitor.namespace Namespace in which Prometheus is running
+    ##
+    namespace: ""
+
+    ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in prometheus.
+    ##
+    jobLabel: ""
+
+    ## @param metrics.serviceMonitor.interval Interval at which metrics should be scraped
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    interval: 30s
+
+    ## @param metrics.serviceMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    scrapeTimeout: ""
+
+    ## @param metrics.serviceMonitor.labels Extra labels for the ServiceMonitor
+    ##
+    labels: {}
+
+
 rbac:
   enabled: false
   serviceaccount:
-    create: false
+    create: true
     name: nextcloud-serviceaccount
+    annotations: {}
+
+
+## @param securityContext for nextcloud pod @deprecated Use `nextcloud.podSecurityContext` instead
+securityContext: {}

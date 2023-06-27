@@ -6,20 +6,36 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 # k3s
 
+## installing k3s
+
 ```
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --cluster-init" sh -
 export NODE_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
 curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_EXEC="server --server https://192.168.122.87:6443" INSTALL_K3S_VERSION=v1.23.6+k3s1 sh -
 ```
 
+## upgrading k3s
+
+TODO
 
 # rook
+
+## installing rook
 
 ```
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph:1.9.2 -f rook-ceph-values.yaml
 
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install --create-namespace --namespace rook-ceph rook-ceph-cluster --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster:1.9.2 -f rook-ceph-cluster-values.yaml
 ```
+
+## upgrading rook
+
+TODO
+
+## Finding the physical device for an OSD
+
+ ceph osd metadata <id>
+
 
 ## Sharing 1 CephFS instance between multiple PVCs
 
@@ -29,20 +45,37 @@ Create CephFilesystem
 Create SC backed by Filesystem & Pool
 Ensure the CSI subvolumegroup was created. If not, `ceph fs subvolumegroup create <fsname> csi`
 Create PVC without a specified PV: PV will be auto-created
-Set created PV to ReclaimPolicy: Retain
+_Super important_: Set created PV to ReclaimPolicy: Retain
 Create a new, better-named PVC
-
-If important data is on CephBlockPool-backed PVCs, don't forget to set the PV's persistentVolumeReclaimPolicy to `Retain`.
 
 ## tolerations
 If your setup divides k8s nodes into ceph & non-ceph nodes (using a label, like `storage-node=true`), ensure labels & a toleration are set properly (`storage-node=false`, with a toleration checking for `storage-node`) so non-ceph nodes still run PV plugin Daemonsets.
 
+Otherwise, any pod scheduled on a non-ceph node won't be able to mount ceph-backed PVCs.
+
+See rook-ceph-cluster-values.yaml->cephClusterSpec->placement for an example.
+
 ## CephFS w/ EC backing pool
 
-EC-backed filesystems require a regular replicated pool as a default
+EC-backed filesystems require a regular replicated pool as a default.
 
-https://lists.ceph.io/hyperkitty/list/ceph-users@ceph.io/thread/Y6T7OVTC4XAAWMFTK3MYGC7TB6G47OCH/
+https://lists.ceph.io/hyperkitty/list/ceph-users@ceph.io/thread/QI42CLL3GJ6G7PZEMAD3CXBHA5BNWSYS/
 https://tracker.ceph.com/issues/42450
+
+Then setfattr a directory on the filesystem with an EC-backed pool. Any new data written to the folder will go to the EC-backed pool.
+
+setfattr -n ceph.dir.layout.pool -v cephfs-erasurecoded /mnt/cephfs/my-erasure-coded-dir
+
+https://docs.ceph.com/en/quincy/cephfs/file-layouts/
+
+## Crush rules for each pool
+
+ for i in `ceph osd pool ls`; do echo $i: `ceph osd pool get $i crush_rule`; done
+
+On ES backed pools, device class information is in the erasure code profile, not the crush rule.
+https://docs.ceph.com/en/latest/dev/erasure-coded-pool/
+
+ for i in `ceph osd erasure-code-profile ls`; do echo $i: `ceph osd erasure-code-profile get $i`; done
 
 
 ## ObjectStore
@@ -156,12 +189,20 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin ... --set-file config.map.confi
 
 # ceph client for cephfs volumes
 
-```
-sudo apt install ceph-fuse
+## New method
 
+https://docs.ceph.com/en/latest/man/8/mount.ceph/
+
+```
+sudo mount -t ceph user@<cluster FSID>.<filesystem name>=/ /mnt/ceph -o secret=<secret key>,x-systemd.requires=ceph.target,x-systemd.mount-timeout=5min,_netdev,mon_addr=192.168.1.1
+```
+
+## Older method (stopped working for me around Pacific)
+
+```
 sudo vi /etc/fstab
 
-192.168.1.1.,192.168.1.2:/    /ceph   ceph    name=admin,secret=<secret key>,x-systemd.mount-timeout=5min,_netdev,mds_namespace=data
+192.168.1.1,192.168.1.2:/    /ceph   ceph    name=admin,secret=<secret key>,x-systemd.mount-timeout=5min,_netdev,mds_namespace=data
 ```
 
 
@@ -170,9 +211,9 @@ https://unix.stackexchange.com/questions/554908/disable-spectre-and-meltdown-mit
 
 # Monitoring
 
-https://rpi4cluster.com/monitoring/k3s-grafana/
+https://rpi4cluster.com/monitoring/monitor-intro/, + what's in the `monitoring` folder.
 
-Tried https://github.com/prometheus-operator/kube-prometheus. The only way to persist dashboards is to add them to Jsonnet & apply the generated configmap.
+Tried https://github.com/prometheus-operator/kube-prometheus. The only way to persist dashboards is to add them to Jsonnet & apply the generated configmap. I'm not ready for that kind of IaC commitment in a homelab.
 
 # Exposing internal services
 
@@ -192,3 +233,4 @@ Service will then be available on port 1234 of any k8s node.
 - deluge
 - gogs ssh ingress (can't go through cloudflare without cloudflared on the client)
 - Something better than `expose` for accessing internal services
+- replicated_ssd crush rule never resolves (or didn't on `data-metadata`)
