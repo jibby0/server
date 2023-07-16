@@ -37,16 +37,7 @@ TODO
  ceph osd metadata <id>
 
 
-## Sharing 1 CephFS instance between multiple PVCs
 
-https://github.com/rook/rook/blob/677d3fa47f21b07245e2e4ab6cc964eb44223c48/Documentation/Storage-Configuration/Shared-Filesystem-CephFS/filesystem-storage.md
-
-Create CephFilesystem
-Create SC backed by Filesystem & Pool
-Ensure the CSI subvolumegroup was created. If not, `ceph fs subvolumegroup create <fsname> csi`
-Create PVC without a specified PV: PV will be auto-created
-_Super important_: Set created PV to ReclaimPolicy: Retain
-Create a new, better-named PVC
 
 ## tolerations
 If your setup divides k8s nodes into ceph & non-ceph nodes (using a label, like `storage-node=true`), ensure labels & a toleration are set properly (`storage-node=false`, with a toleration checking for `storage-node`) so non-ceph nodes still run PV plugin Daemonsets.
@@ -55,7 +46,9 @@ Otherwise, any pod scheduled on a non-ceph node won't be able to mount ceph-back
 
 See rook-ceph-cluster-values.yaml->cephClusterSpec->placement for an example.
 
-## CephFS w/ EC backing pool
+## CephFS
+
+### EC backing pool
 
 EC-backed filesystems require a regular replicated pool as a default.
 
@@ -67,6 +60,23 @@ Then setfattr a directory on the filesystem with an EC-backed pool. Any new data
 setfattr -n ceph.dir.layout.pool -v cephfs-erasurecoded /mnt/cephfs/my-erasure-coded-dir
 
 https://docs.ceph.com/en/quincy/cephfs/file-layouts/
+
+### Sharing 1 CephFS instance between multiple PVCs
+
+https://github.com/rook/rook/blob/677d3fa47f21b07245e2e4ab6cc964eb44223c48/Documentation/Storage-Configuration/Shared-Filesystem-CephFS/filesystem-storage.md
+
+Create CephFilesystem
+Create SC backed by Filesystem & Pool
+Ensure the CSI subvolumegroup was created. If not, `ceph fs subvolumegroup create <fsname> csi`
+Create PVC without a specified PV: PV will be auto-created
+_Super important_: Set created PV to ReclaimPolicy: Retain
+Create a new, better-named PVC
+
+### Resizing a CephFS PVC
+Grow resources->storage on PV
+Grow resources->storage on PVC
+
+Verify the new limit: `getfattr -n ceph.quota.max_bytes /mnt/volumes/csi/csi-vol-<uuid>/<uuid>`
 
 ## Crush rules for each pool
 
