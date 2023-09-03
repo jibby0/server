@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant
+  namespace: homeassistant
+spec:
+  selector:
+    matchLabels:
+      app: homeassistant
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: homeassistant
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: homeassistant/home-assistant:2023.8.4
+        ports:
+        - containerPort: 8123
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/config"
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: homeassistant-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homeassistant-service
+  namespace: homeassistant
+spec:
+  selector:
+    app: homeassistant
+  type: ClusterIP
+  ports:
+  - name: homeassistant-web-port
+    protocol: TCP
+    port: 8123
+    targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homeassistant
+  namespace: homeassistant
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`homeassistant.jibby.org`)
+    services:
+    - kind: Service
+      name: homeassistant-service
+      port: 8123

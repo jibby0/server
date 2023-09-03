@@ -50,6 +50,9 @@ spec:
     podSecurityContext:
       fsGroup: null
 
+    # ACME functionality is not supported when running Traefik as a DaemonSet
+    #deployment:
+    #  kind: DaemonSet
     service:
       # type: ClusterIP
       spec:
