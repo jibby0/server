@@ -233,6 +233,41 @@ kubectl expose svc/some-service --name=some-service-external --port 1234 --targe
 
 Service will then be available on port 1234 of any k8s node.
 
+# Backups
+
+## velero
+```
+KUBECONFIG=/etc/rancher/k3s/k3s.yaml velero install \
+ --provider aws \
+ --plugins velero/velero-plugin-for-aws:v1.0.0 \
+ --bucket velero  \
+ --secret-file ./credentials-velero  \
+ --use-volume-snapshots=true \
+ --default-volumes-to-fs-backup \
+ --use-node-agent \
+ --backup-location-config region=default,s3ForcePathStyle="true",s3Url=http://172.16.69.234:9000  \
+ --snapshot-location-config region="default"
+```
+
+Had to remove `resources:` from the daemonset.
+
+### Change s3 target:
+```
+kubectl -n velero edit backupstoragelocation default
+```
+
+### Using a local storage storageClass in the target
+
+https://velero.io/docs/v1.3.0/restore-reference/
+
+Velero does not support hostPath PVCs, but works just fine with the `openebs-hostpath` storageClass.
+
+```
+KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install openebs --namespace openebs openebs/openebs --create-namespace --set localprovisioner.basePath=/k3s-storage/openebs
+```
+
+This is a nice PVC option for simpler backup target setups.
+
 
 # libvirtd
 
@@ -241,6 +276,7 @@ Service will then be available on port 1234 of any k8s node.
 # Still to do
 
 - deluge
-- gogs ssh ingress (can't go through cloudflare without cloudflared on the client)
+- gogs ssh ingress?
+  - can't go through cloudflare without cloudflared on the client
+  - cloudflared running in the gogs pod?
 - Something better than `expose` for accessing internal services
-- replicated_ssd crush rule never resolves (or didn't on `data-metadata`)

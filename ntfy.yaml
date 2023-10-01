@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: ntfy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy
+  namespace: ntfy
+data:
+  server.yml: |
+    # Template: https://github.com/binwiederhier/ntfy/blob/main/server/server.yml
+    base-url: https://ntfy.jibby.org
+    auth-file: "/ntfy/user.db"
+    auth-default-access: "deny-all"
+    behind-proxy: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  namespace: ntfy
+spec:
+  selector:
+    matchLabels:
+      app: ntfy
+  template:
+    metadata:
+      labels:
+        app: ntfy
+    spec:
+      containers:
+      - name: ntfy
+        image: binwiederhier/ntfy:v2.7.0
+        args: ["serve"]
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: config
+          mountPath: "/etc/ntfy"
+          readOnly: true
+        - name: data
+          mountPath: "/ntfy"
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 80
+          failureThreshold: 10
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: ntfy
+        - name: data
+          persistentVolumeClaim:
+            claimName: ntfy-pvc
+---
+# Basic service for port 80
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-service
+  namespace: ntfy
+spec:
+  selector:
+    app: ntfy
+  ports:
+  - port: 80
+    targetPort: 80

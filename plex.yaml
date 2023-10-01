@@ -18,10 +18,12 @@ spec:
     metadata:
       labels:
         app: plex
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media,media-metadata,tmpfs
     spec:
       containers:
       - name: plex
-        image: linuxserver/plex:amd64-version-1.32.5.7349-8f4248874
+        image: linuxserver/plex:amd64-version-1.32.5.7516-8f4248874
         # for debugging
         # command: ["/bin/sh"]
         # args: ["-c", "sleep 3600"]

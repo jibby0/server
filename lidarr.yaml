@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: lidarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: plex
     spec:
       containers:
       - name: lidarr

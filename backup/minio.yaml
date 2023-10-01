@@ -2,95 +2,82 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-    name: gogs
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gogs-pvc
-  namespace: gogs
-  labels:
-    app: gogs
-spec:
-  storageClassName: ceph-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
+    name: minio
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gogs
-  namespace: gogs
+  name: minio
+  namespace: minio
 spec:
   selector:
     matchLabels:
-      app: gogs
+      app: minio
   replicas: 1
   template:
     metadata:
       labels:
-        app: gogs
+        app: minio
     spec:
       containers:
-      - name: gogs
-        image: gogs/gogs:0.13.0
-        env:
-        - name: SOCAT_LINK
-          value: "false"
+      - name: minio
+        image: "quay.io/minio/minio:RELEASE.2023-09-16T01-01-47Z"
+        command: ["minio", "server", "/data", "--console-address", ":9090"]
         ports:
-        - containerPort: 22
-          name: ssh-svc
-        - containerPort: 3000
+        - containerPort: 9000
           name: http-web-svc
+        - containerPort: 9090
+          name: http-con-svc
+        envFrom:
+        - secretRef:
+            name: minio-secret
+        env:
         volumeMounts:
         - mountPath: "/data"
           name: data
         livenessProbe:
           httpGet:
-            path: /
-            port: 3000
+            path: /minio/health/live
+            port: 9000
           failureThreshold: 10
           initialDelaySeconds: 30
           periodSeconds: 10
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: gogs-pvc
+          claimName: minio-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: gogs-service
-  namespace: gogs
+  name: minio-service
+  namespace: minio
 spec:
   selector:
-    app: gogs
+    app: minio
   type: ClusterIP
   ports:
-  - name: gogs-web-port
+  - name: minio-web-port
     protocol: TCP
-    port: 3000
+    port: 9000
     targetPort: http-web-svc
-  - name: gogs-ssh-port
+  - name: minio-con-port
     protocol: TCP
-    port: 22
-    targetPort: ssh-svc
+    port: 9090
+    targetPort: http-con-svc
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: gogs
-  namespace: gogs
+  name: minio
+  namespace: minio
 spec:
   entryPoints:
   - websecure
   routes:
   - kind: Rule
-    match: Host(`gogs.jibby.org`)
+    match: Host(`s3.bnuuy.org`)
     services:
     - kind: Service
-      name: gogs-service
-      port: 3000
+      name: minio-service
+      port: 9000

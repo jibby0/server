@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: vaultwarden
-        image: vaultwarden/server:1.28.1
+        image: vaultwarden/server:1.29.2
         ports:
         - containerPort: 80
           name: http-web-svc
@@ -68,25 +68,3 @@ spec:
     protocol: TCP
     port: 3012
     targetPort: http-sock-svc
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: vaultwarden
-  namespace: vaultwarden
-spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`vaultwarden.jibby.org`)
-    services:
-    - kind: Service
-      name: vaultwarden-service
-      port: 80
-  - kind: Rule
-    match: Host(`vaultwarden.jibby.org`) && Path(`/notifications/hub`)
-    services:
-    - kind: Service
-      name: vaultwarden-service
-      port: 3012

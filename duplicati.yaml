@@ -1,0 +1,104 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: duplicati
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: duplicati
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: duplicati
+      annotations:
+        backup.velero.io/backup-volumes-excludes: plex,media2,data
+    spec:
+      containers:
+      - name: duplicati
+        image: lscr.io/linuxserver/duplicati:version-v2.0.7.1-2.0.7.1_beta_2023-05-25
+        ports:
+        - containerPort: 8200
+          name: http-web-svc
+        env:
+        - name: TZ
+          value: Etc/UTC
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: "/plex"
+          name: plex
+        - mountPath: "/media2"
+          name: media2
+        - mountPath: "/data"
+          name: data
+        - mountPath: "/config"
+          name: config
+      volumes:
+      - name: plex
+        persistentVolumeClaim:
+          claimName: plex-pvc
+      - name: media2
+        persistentVolumeClaim:
+          claimName: media2-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: duplicati-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: duplicati-service
+  namespace: plex
+spec:
+  selector:
+    app: duplicati
+  type: ClusterIP
+  ports:
+  - name: duplicati-web-port
+    protocol: TCP
+    port: 8200
+    targetPort: http-web-svc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: duplicati-run-tree
+  namespace: plex
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: tree
+            image: alpine:3.18.4
+            imagePullPolicy: IfNotPresent
+            envFrom:
+            - secretRef:
+                name: ntfy-auth-secret
+            command:
+            - /bin/sh
+            - -c
+            - (tree /plex > /plex/tree.txt && tree /media2 > /media2/tree.txt) || curl -u $NTFY_AUTH -d 'error generating media tree' https://ntfy.jibby.org/media-tree
+            volumeMounts:
+            - mountPath: "/plex"
+              name: plex
+            - mountPath: "/media2"
+              name: media2
+          volumes:
+          - name: plex
+            persistentVolumeClaim:
+              claimName: plex-pvc
+          - name: media2
+            persistentVolumeClaim:
+              claimName: media2-pvc
+          restartPolicy: OnFailure

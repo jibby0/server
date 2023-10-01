@@ -18,6 +18,8 @@ spec:
     metadata:
       labels:
         app: jellyfin
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media,tmpfs
     spec:
       containers:
       - name: jellyfin
