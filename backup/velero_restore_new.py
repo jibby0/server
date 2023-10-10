@@ -9,6 +9,7 @@ k3s_env = {"KUBECONFIG": "/etc/rancher/k3s/k3s.yaml"}
 ntfy_topic = "https://ntfy.jibby.org/velero-restore"
 ntfy_auth = os.environ["NTFY_AUTH"]
 restart_deployments_in = ["vaultwarden"]
+restart_statefulsets_in = ["postgres"]
 
 
 def main():
@@ -44,7 +45,7 @@ def main():
         subprocess.run(
             ["/usr/local/bin/kubectl", "delete", "namespace", namespace],
             env=k3s_env,
-            check=True,
+            check=False, # OK if this namespace doesn't exist,
         )
 
     subprocess.run(
@@ -59,14 +60,32 @@ def main():
             env=k3s_env,
             check=True,
         )
+    for namespace in restart_statefulsets_in:
+        subprocess.run(
+            ["/usr/local/bin/kubectl", "-n", namespace, "rollout", "restart", "statefulset"],
+            env=k3s_env,
+            check=True,
+        )
+    wait_until_up("https://vaultwarden.bnuuy.org", 300)
     ntfy_send(
         f"Successfully ran velero restore for backup {newest_backup['metadata']['name']}, "
         f"{newest_backup['metadata']['creationTimestamp']}"
     )
 
+def wait_until_up(url: str, timeout_sec: int):
+    start = datetime.datetime.now()
+    while True:
+        try:
+            subprocess.run(["curl", "--fail", url], check=True)
+            return
+        except subprocess.CalledProcessError as exc:
+            if start + datetime.timedelta(seconds=timeout_sec) < datetime.datetime.now():
+                raise ValueError(f">{timeout_sec} seconds passed & {url} is not up: {exc}")
+
+
 def ntfy_send(data):
     # auth & payload formatting is awful in urllib. just use curl
-    subprocess.run(["curl", "-u", ntfy_auth, "-d", data, ntfy_topic], check=True)
+    subprocess.run(["curl", "--fail", "-u", ntfy_auth, "-d", data, ntfy_topic], check=True)
 
 if __name__ == '__main__':
     try:

@@ -73,7 +73,7 @@ metadata:
   name: duplicati-run-tree
   namespace: plex
 spec:
-  schedule: "* * * * *"
+  schedule: "0 0 * * 0"
   jobTemplate:
     spec:
       template:

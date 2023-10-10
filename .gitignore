@@ -4,3 +4,4 @@ playbook.retry
 .venv
 hosts
 secret-*.yaml
+credentials-*
