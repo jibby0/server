@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: bazarr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bazarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: plex
+    spec:
+      containers:
+      - name: bazarr
+        image: lscr.io/linuxserver/bazarr:development-v1.3.2-beta.10-ls550
+        ports:
+        - containerPort: 6767
+          name: http-web-svc
+        env:
+        - name: TZ
+          value: America/New_York
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: "/plex"
+          name: plex
+        - mountPath: "/config"
+          name: config
+      volumes:
+      - name: plex
+        persistentVolumeClaim:
+          claimName: plex-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: bazarr-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr-service
+  namespace: plex
+spec:
+  selector:
+    app: bazarr
+  type: ClusterIP
+  ports:
+  - name: bazarr-web-port
+    protocol: TCP
+    port: 6767
+    targetPort: http-web-svc
