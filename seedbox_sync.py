@@ -49,8 +49,7 @@ for new_file in new:
 
     print(f"Moving to ready: {new_file}")
     try:
-        # rsync here is probably overkill
-        subprocess.run(["rsync", "-r", f'{local_working_path}/{new_file}', f'{local_data_path}'], check=True)
+        subprocess.run(["mv", f'{local_working_path}/{new_file}', f'{local_data_path}'], check=True)
     except:
         subprocess.run(["rm", f'{local_metadata_path}/{new_file}'], check=True)
         raise
