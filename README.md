@@ -34,17 +34,23 @@ TODO
 
 ## Finding the physical device for an OSD
 
- ceph osd metadata <id>
+`ceph osd metadata <id> | grep -e '"hostname"' -e '"bluestore_bdev_dev_node"'`
 
-
-
+```
+$ ceph osd metadata osd.1 | grep -e '"hostname"' -e '"bluestore_bdev_dev_node"'
+    "bluestore_bdev_dev_node": "/dev/sdd",
+    "hostname": "node1",
+```
 
 ## tolerations
-If your setup divides k8s nodes into ceph & non-ceph nodes (using a label, like `storage-node=true`), ensure labels & a toleration are set properly (`storage-node=false`, with a toleration checking for `storage-node`) so non-ceph nodes still run PV plugin Daemonsets.
+
+My setup divides k8s nodes into ceph & non-ceph nodes (using the label `storage-node=true`).
+
+Ensure labels & a toleration are set properly, so non-rook nodes can still run PV plugin Daemonsets. I accomplished this with a `storage-node=false` label on non-rook nodes, with a toleration checking for `storage-node`.
 
 Otherwise, any pod scheduled on a non-ceph node won't be able to mount ceph-backed PVCs.
 
-See rook-ceph-cluster-values.yaml->cephClusterSpec->placement for an example.
+See `rook-ceph-cluster-values.yaml->cephClusterSpec->placement` for an example.
 
 ## CephFS
 
@@ -96,7 +102,7 @@ If hostNetwork is enabled on the cluster, ensure rook-ceph-operator is not runni
 
 This is great for setting up easy public downloads.
 
-- Create a user (rook/buckets/user-josh.yaml)
+- Create a user (see `rook/buckets/user-josh.yaml`)
 - `kubectl -n rook-ceph get secret rook-ceph-object-user-ceph-objectstore-josh -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}`
 - Create bucket (`rook/buckets/bucket.py::create_bucket`)
 - Set policy (`rook/buckets/bucket.py::set_public_read_policy`)
@@ -142,9 +148,9 @@ sudo update-initramfs -u
 
 ## configure containerd to use nvidia by default
 
-Copy https://github.com/k3s-io/k3s/blob/v1.24.2%2Bk3s2/pkg/agent/templates/templates_linux.go into /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl (substitute your k3s version)
+Copy https://github.com/k3s-io/k3s/blob/v1.24.2%2Bk3s2/pkg/agent/templates/templates_linux.go into `/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl` (substitute your k3s version)
 
-Edit the file:
+Edit the file to add a `[plugins.cri.containerd.runtimes.runc.options]` section:
 
 ```
 <... snip>
@@ -176,7 +182,7 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade -i nvdp nvdp/nvidia-device-plu
 
 Ensure the pods on the namespace are Running.
 
-Test GPU passthrough by applying examples/cuda-pod.yaml, then exec-ing into it & running `nvidia-smi`.
+Test GPU passthrough by applying `examples/cuda-pod.yaml`, then exec-ing into it & running `nvidia-smi`.
 
 ## Sharing GPU
 
@@ -215,7 +221,6 @@ sudo vi /etc/fstab
 192.168.1.1,192.168.1.2:/    /ceph   ceph    name=admin,secret=<secret key>,x-systemd.mount-timeout=5min,_netdev,mds_namespace=data
 ```
 
-
 # disable mitigations
 https://unix.stackexchange.com/questions/554908/disable-spectre-and-meltdown-mitigations
 
@@ -235,7 +240,14 @@ Service will then be available on port 1234 of any k8s node.
 
 # Backups
 
-## velero
+My backups target is a machine running
+- k3s
+- minio
+- velero
+
+Important services are backed up with velero to the remote minio instance. These backups are restored to the remote k3s instance to ensure functionality.
+
+## installing velero
 ```
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml velero install \
  --provider aws \
@@ -251,7 +263,7 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml velero install \
 
 Had to remove `resources:` from the daemonset.
 
-### Change s3 target:
+### Change s3 target after install
 ```
 kubectl -n velero edit backupstoragelocation default
 ```
@@ -271,12 +283,14 @@ This is a nice PVC option for simpler backup target setups.
 
 # libvirtd
 
-...
+TODO. This would be nice for one-off Windows game servers.
 
 # Still to do
 
-- deluge
+- bittorrent + VPN
 - gogs ssh ingress?
   - can't go through cloudflare without cloudflared on the client
   - cloudflared running in the gogs pod?
+  - do gitea or gitlab have better options?
 - Something better than `expose` for accessing internal services
+  - short term, capture the resource definition YAML & save it alongside the service
