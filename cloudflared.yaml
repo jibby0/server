@@ -62,22 +62,10 @@ data:
     credentials-file: /etc/cloudflared/creds/credentials.json
     metrics: 0.0.0.0:2000
     ingress:
-    - hostname: jibby.org
-      service: http://jekyll-service.blog.svc.cluster.local:80
-    - hostname: nextcloud.jibby.org
-      service: http://nextcloud.nextcloud.svc.cluster.local:8080
     - hostname: gogs.jibby.org
       service: http://gogs-service.gogs.svc.cluster.local:3000
     #- hostname: matrix.jibby.org
     #  service: http://matrix-service.matrix.svc.cluster.local:8008
-    - hostname: selfoss.jibby.org
-      service: http://selfoss-service.selfoss.svc.cluster.local:8888
-    - hostname: plex.jibby.org
-      service: http://plex-service.plex.svc.cluster.local:32400
-    - hostname: jellyfin.jibby.org
-      service: http://jellyfin-service.plex.svc.cluster.local:8096
-    - hostname: s3.jibby.org
-      service: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc.cluster.local:6980
     - hostname: miniflux.jibby.org
       service: http://miniflux-service.miniflux.svc.cluster.local:8080
     - hostname: vaultwarden.jibby.org

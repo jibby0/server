@@ -1,4 +1,5 @@
 import datetime
+import time
 import os
 import json
 import subprocess
@@ -48,6 +49,8 @@ def main():
             check=False, # OK if this namespace doesn't exist,
         )
 
+    # TODO check for pv with mount points in these namespaces
+
     subprocess.run(
         ["/usr/local/bin/velero", "restore", "create", "--from-backup", newest_backup['metadata']['name'], "--include-namespaces", ",".join(namespaces), "--wait"],
         env=k3s_env,
@@ -81,6 +84,7 @@ def wait_until_up(url: str, timeout_sec: int):
         except subprocess.CalledProcessError as exc:
             if start + datetime.timedelta(seconds=timeout_sec) < datetime.datetime.now():
                 raise ValueError(f">{timeout_sec} seconds passed & {url} is not up: {exc}")
+            time.sleep(5)
 
 
 def ntfy_send(data):

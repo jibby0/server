@@ -1,0 +1,95 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: diun
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: diun
+  name: diun
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: diun
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: diun
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: diun
+subjects:
+  - kind: ServiceAccount
+    name: diun
+    namespace: diun
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: diun
+  name: diun
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diun
+  template:
+    metadata:
+      labels:
+        app: diun
+    spec:
+      serviceAccountName: diun
+      containers:
+        - name: diun
+          image: crazymax/diun:latest
+          imagePullPolicy: Always
+          args: ["serve"]
+          env:
+            - name: TZ
+              value: "America/New_York"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: LOG_JSON
+              value: "false"
+            - name: DIUN_WATCH_WORKERS
+              value: "20"
+            - name: DIUN_WATCH_SCHEDULE
+              value: "0 */6 * * *"
+            - name: DIUN_WATCH_JITTER
+              value: "30s"
+            - name: DIUN_PROVIDERS_KUBERNETES
+              value: "true"
+            - name: DIUN_PROVIDERS_KUBERNETES_WATCHBYDEFAULT
+              value: "true"
+            - name: DIUN_NOTIF_NTFY_ENDPOINT
+              value: "https://ntfy.jibby.org"
+            - name: DIUN_NOTIF_NTFY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: diun
+                  key: ntfy-token
+                  optional: false
+            - name: DIUN_NOTIF_NTFY_TOPIC
+              value: "diun"
+          volumeMounts:
+            - mountPath: "/data"
+              name: "data"
+      restartPolicy: Always
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: diun-pvc

@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: sonarr
-        image: lscr.io/linuxserver/sonarr:develop-4.0.0.344-ls383
+        image: lscr.io/linuxserver/sonarr:develop-4.0.0.752-ls25
         ports:
         - containerPort: 8989
           name: http-web-svc

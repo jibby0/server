@@ -1,14 +1,20 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: diun
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: radarr-pvc
-  namespace: plex
+  name: diun-pvc
+  namespace: diun
   labels:
-    app: radarr
+    app: diun
 spec:
   storageClassName: ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 2Gi

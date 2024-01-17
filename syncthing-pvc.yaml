@@ -1,14 +1,15 @@
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: radarr-pvc
+  name: syncthing-pvc
   namespace: plex
   labels:
-    app: radarr
+    app: syncthing
 spec:
   storageClassName: ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 2Gi

@@ -1,14 +1,20 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: immich
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: radarr-pvc
-  namespace: plex
+  name: immich-pvc
+  namespace: immich
   labels:
-    app: radarr
+    app: immich
 spec:
   storageClassName: ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 300Gi

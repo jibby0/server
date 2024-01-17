@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: plex
+  name: syncthing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: syncthing
+  template:
+    metadata:
+      labels:
+        app: syncthing
+      annotations:
+        backup.velero.io/backup-volumes-excludes: data
+    spec:
+      containers:
+        - name: syncthing
+          image: linuxserver/syncthing:1.27.2
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8384
+          name: http-web-svc
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/New_York"
+          volumeMounts:
+            - mountPath: "/data"
+              name: "data"
+            - mountPath: "/config"
+              name: "config"
+      restartPolicy: Always
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: syncthing-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: syncthing-service
+  namespace: plex
+spec:
+  selector:
+    app: syncthing
+  type: ClusterIP
+  ports:
+  - name: syncthing-web-port
+    protocol: TCP
+    port: 8384
+    targetPort: http-web-svc
