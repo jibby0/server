@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: miniflux
-        image: miniflux/miniflux:2.0.39
+        image: miniflux/miniflux:2.1.1
         ports:
         - containerPort: 8080
           name: http-web-svc
@@ -31,6 +31,8 @@ spec:
         env:
         - name: RUN_MIGRATIONS
           value: "1"
+        - name: BASE_URL
+          value: https://miniflux.jibby.org
         livenessProbe:
           exec:
             command: ["/usr/bin/miniflux", "-healthcheck", "auto"]

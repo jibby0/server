@@ -59,3 +59,153 @@ spec:
     - kind: Service
       name: homeassistant-service
       port: 8123
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper
+  namespace: homeassistant
+spec:
+  selector:
+    matchLabels:
+      app: whisper
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: whisper
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: rhasspy/wyoming-whisper
+        args:
+          - --model
+          - base-int8
+          - --language
+          - en
+        ports:
+        - containerPort: 10300
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/data"
+          name: tmpfs
+      volumes:
+      - name: tmpfs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piper
+  namespace: homeassistant
+spec:
+  selector:
+    matchLabels:
+      app: piper
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: piper
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: rhasspy/wyoming-piper
+        args:
+          - --voice
+          - en_US-lessac-high
+        ports:
+        - containerPort: 10200
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/data"
+          name: tmpfs
+      volumes:
+      - name: tmpfs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openwakeword
+  namespace: homeassistant
+spec:
+  selector:
+    matchLabels:
+      app: openwakeword
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwakeword
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: rhasspy/wyoming-openwakeword
+        args:
+          - --preload-model
+          - hey_jarvis
+          - --custom-model-dir
+          - /custom
+        ports:
+        - containerPort: 10400
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/custom"
+          name: tmpfs
+      volumes:
+      - name: tmpfs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: homeassistant
+spec:
+  selector:
+    matchLabels:
+      app: mosquitto
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: eclipse-mosquitto:2.0.18
+        ports:
+        - containerPort: 1883
+          name: noenc-noauth
+        volumeMounts:
+        - name: config
+          mountPath: /mosquitto/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: mosquitto
+          items:
+          - key: mosquitto.conf
+            path: mosquitto.conf
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto
+  namespace: homeassistant
+data:
+  mosquitto.conf: |
+    listener 1883
+    allow_anonymous true

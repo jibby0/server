@@ -21,12 +21,10 @@ spec:
     spec:
       containers:
       - name: vaultwarden
-        image: vaultwarden/server:1.29.2
+        image: vaultwarden/server:latest
         ports:
         - containerPort: 80
           name: http-web-svc
-        - containerPort: 3012
-          name: http-sock-svc
         envFrom:
         - secretRef:
             name: vaultwarden-secret
@@ -64,7 +62,3 @@ spec:
     protocol: TCP
     port: 80
     targetPort: http-web-svc
-  - name: vaultwarden-sock-port
-    protocol: TCP
-    port: 3012
-    targetPort: http-sock-svc
