@@ -22,7 +22,7 @@
 ##
 image:
   repository: nextcloud
-  tag: 28.0.2-apache
+  tag: 29.0.0-fpm
   pullPolicy: IfNotPresent
   # pullSecrets:
   #   - myRegistrKeySecretName
@@ -121,7 +121,19 @@ nextcloud:
       password: pass
   # PHP Configuration files
   # Will be injected in /usr/local/etc/php/conf.d for apache image and in /usr/local/etc/php-fpm.d when nginx.enabled: true
-  phpConfigs: {}
+  phpConfigs:
+    www.conf: |
+      [www]
+      user = www-data
+      group = www-data
+      listen = 127.0.0.1:9000
+      pm = dynamic
+      pm.max_children = 86
+      pm.start_servers = 21
+      pm.min_spare_servers = 21
+      pm.max_spare_servers = 64
+      ; for large file uploads
+      request_terminate_timeout = 3600
   # Default config files
   # IMPORTANT: Will be used only if you put extra configs, otherwise default will come from nextcloud itself
   # Default confgurations can be found here: https://github.com/nextcloud/docker/tree/master/16.0/apache/config
@@ -232,7 +244,7 @@ nextcloud:
 
 nginx:
   ## You need to set an fpm version of the image for nextcloud if you want to use nginx!
-  enabled: false
+  enabled: true
   image:
     repository: nginx
     tag: alpine
@@ -240,9 +252,169 @@ nginx:
 
   config:
     # This generates the default nginx config as per the nextcloud documentation
-    default: true
-    # custom: |-
-    #     worker_processes  1;..
+    default: false
+    # Default is below, changes marked with CHANGE
+    custom: |-
+      error_log  /var/log/nginx/error.log warn;
+      pid        /var/run/nginx.pid;
+
+
+      events {
+          worker_connections  1024;
+      }
+
+
+      http {
+          include       /etc/nginx/mime.types;
+          default_type  application/octet-stream;
+
+          log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for"';
+
+          access_log  /var/log/nginx/access.log  main;
+          # CHANGE for large file uploads
+          proxy_read_timeout 3600;
+
+          sendfile        on;
+          #tcp_nopush     on;
+
+          keepalive_timeout  65;
+
+          #gzip  on;
+
+          upstream php-handler {
+              server 127.0.0.1:9000;
+          }
+
+          server {
+              listen 80;
+
+              # HSTS settings
+              # WARNING: Only add the preload option once you read about
+              # the consequences in https://hstspreload.org/. This option
+              # will add the domain to a hardcoded list that is shipped
+              # in all major browsers and getting removed from this list
+              # could take several months.
+              #add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload;" always;
+
+              # set max upload size
+              client_max_body_size 10G;
+              fastcgi_buffers 64 4K;
+
+              # Enable gzip but do not remove ETag headers
+              gzip on;
+              gzip_vary on;
+              gzip_comp_level 4;
+              gzip_min_length 256;
+              gzip_proxied expired no-cache no-store private no_last_modified no_etag auth;
+              gzip_types application/atom+xml application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
+
+              # Pagespeed is not supported by Nextcloud, so if your server is built
+              # with the `ngx_pagespeed` module, uncomment this line to disable it.
+              #pagespeed off;
+
+              # HTTP response headers borrowed from Nextcloud `.htaccess`
+              add_header Referrer-Policy                      "no-referrer"       always;
+              add_header X-Content-Type-Options               "nosniff"           always;
+              add_header X-Download-Options                   "noopen"            always;
+              add_header X-Frame-Options                      "SAMEORIGIN"        always;
+              add_header X-Permitted-Cross-Domain-Policies    "none"              always;
+              add_header X-Robots-Tag                         "noindex, nofollow" always;
+              add_header X-XSS-Protection                     "1; mode=block"     always;
+              add_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+              # Remove X-Powered-By, which is an information leak
+              fastcgi_hide_header X-Powered-By;
+
+              # Path to the root of your installation
+              root /var/www/html;
+
+              # Specify how to handle directories -- specifying `/index.php$request_uri`
+              # here as the fallback means that Nginx always exhibits the desired behaviour
+              # when a client requests a path that corresponds to a directory that exists
+              # on the server. In particular, if that directory contains an index.php file,
+              # that file is correctly served; if it doesn't, then the request is passed to
+              # the front-end controller. This consistent behaviour means that we don't need
+              # to specify custom rules for certain paths (e.g. images and other assets,
+              # `/updater`, `/ocm-provider`, `/ocs-provider`), and thus
+              # `try_files $uri $uri/ /index.php$request_uri`
+              # always provides the desired behaviour.
+              index index.php index.html /index.php$request_uri;
+
+              # Rule borrowed from `.htaccess` to handle Microsoft DAV clients
+              location = / {
+                  if ( $http_user_agent ~ ^DavClnt ) {
+                      return 302 /remote.php/webdav/$is_args$args;
+                  }
+              }
+
+              location = /robots.txt {
+                  allow all;
+                  log_not_found off;
+                  access_log off;
+              }
+
+              # Make a regex exception for `/.well-known` so that clients can still
+              # access it despite the existence of the regex rule
+              # `location ~ /(\.|autotest|...)` which would otherwise handle requests
+              # for `/.well-known`.
+              location ^~ /.well-known {
+                  # The following 6 rules are borrowed from `.htaccess`
+
+                  location = /.well-known/carddav     { return 301 /remote.php/dav/; }
+                  location = /.well-known/caldav      { return 301 /remote.php/dav/; }
+                  # Anything else is dynamically handled by Nextcloud
+                  location ^~ /.well-known            { return 301 /index.php$uri; }
+
+                  try_files $uri $uri/ =404;
+              }
+
+              # Rules borrowed from `.htaccess` to hide certain paths from clients
+              location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)(?:$|/)  { return 404; }
+              location ~ ^/(?:\.|autotest|occ|issue|indie|db_|console)              { return 404; }
+
+              # Ensure this block, which passes PHP files to the PHP process, is above the blocks
+              # which handle static assets (as seen below). If this block is not declared first,
+              # then Nginx will encounter an infinite rewriting loop when it prepends `/index.php`
+              # to the URI, resulting in a HTTP 500 error response.
+              location ~ \.php(?:$|/) {
+                  fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+                  set $path_info $fastcgi_path_info;
+
+                  try_files $fastcgi_script_name =404;
+
+                  include fastcgi_params;
+                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                  fastcgi_param PATH_INFO $path_info;
+                  #fastcgi_param HTTPS on;
+
+                  fastcgi_param modHeadersAvailable true;         # Avoid sending the security headers twice
+                  fastcgi_param front_controller_active true;     # Enable pretty urls
+                  fastcgi_pass php-handler;
+
+                  fastcgi_intercept_errors on;
+                  fastcgi_request_buffering off;
+              }
+
+              location ~ \.(?:css|js|svg|gif)$ {
+                  try_files $uri /index.php$request_uri;
+                  expires 6M;         # Cache-Control policy borrowed from `.htaccess`
+                  access_log off;     # Optional: Don't log access to assets
+              }
+
+              location ~ \.woff2?$ {
+                  try_files $uri /index.php$request_uri;
+                  expires 7d;         # Cache-Control policy borrowed from `.htaccess`
+                  access_log off;     # Optional: Don't log access to assets
+              }
+
+              location / {
+                  try_files $uri $uri/ /index.php$request_uri;
+              }
+          }
+      }
+
 
   resources: {}
 
@@ -425,17 +597,17 @@ persistence:
     accessMode: ReadWriteOnce
     size: 200Gi
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
+  limits:
   #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
+    memory: 4Gi
+  requests:
   #  cpu: 100m
-  #  memory: 128Mi
+    memory: 1Gi
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
@@ -476,8 +648,16 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
-
+# To speed up file transfers
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: cluster-ingress
+          operator: In
+          values:
+          - "true"
 
 ## Prometheus Exporter / Metrics
 ##

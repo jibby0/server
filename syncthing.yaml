@@ -16,13 +16,25 @@ spec:
       annotations:
         backup.velero.io/backup-volumes-excludes: data
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster-ingress
+                operator: In
+                values:
+                - "true"
+      hostNetwork: true
       containers:
         - name: syncthing
           image: linuxserver/syncthing:1.27.2
           imagePullPolicy: Always
           ports:
           - containerPort: 8384
-          name: http-web-svc
+            name: http-web-svc
+          - containerPort: 22000
+            name: transfer-svc
           env:
             - name: PUID
               value: "1000"
@@ -43,18 +55,3 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: syncthing-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: syncthing-service
-  namespace: plex
-spec:
-  selector:
-    app: syncthing
-  type: ClusterIP
-  ports:
-  - name: syncthing-web-port
-    protocol: TCP
-    port: 8384
-    targetPort: http-web-svc

@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: bazarr
-        image: lscr.io/linuxserver/bazarr:development-v1.3.2-beta.10-ls550
+        image: lscr.io/linuxserver/bazarr:development-version-v1.4.3-beta.31
         ports:
         - containerPort: 6767
           name: http-web-svc

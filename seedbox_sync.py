@@ -1,8 +1,8 @@
 # rsync files from a seedbox to a local machine, exactly once, over SSH.
 #
 # Why?
-#  sonarr requires that any Remote Path Mappings have a local path reflecting its contents. This can be done with NFS or SSHFS, but those are difficult to set up in containers, and get wonky when the remote server reboots.
-#  rsync over SSH + cron doesn't care if the remote machine reboots, + easily runs in a container.
+#  *arr requires that any Remote Path Mappings have a local path reflecting its contents. This can be done with NFS or SSHFS, but those are difficult to set up in containers, and get wonky when the remote server reboots.
+#  rsync over SSH + cron doesn't care if the remote machine reboots, and easily runs in a container.
 
 # How?
 #  Usage: sonarr_sync.py my-seedbox /seedbox/path/to/data /local/working /local/metadata /local/data
@@ -19,7 +19,7 @@
 
 import subprocess
 import sys
-
+import concurrent.futures
 
 if len(sys.argv) != 6:
     print("One or more args are undefined")
@@ -31,17 +31,17 @@ r = subprocess.run(["ssh", host, "bash", "-c", f"IFS=$'\n'; ls {host_data_path}"
 
 available = {f for f in r.stdout.decode().split('\n') if f}
 
-# There's better ways to list a dir locally, but using bash +ls again avoids any possible formatting discrepencies.
+# There's better ways to list a dir locally, but using bash & ls again reduces possible formatting discrepencies.
 r = subprocess.run(["bash", "-c", f"IFS=$'\n'; ls {local_metadata_path}"], stdout=subprocess.PIPE, check=True)
 
 processed = {f for f in r.stdout.decode().split('\n') if f}
 
 new = available - processed
 
-for new_file in new:
+def process_file(new_file: str) -> None:
     # Be super cautious about empty file names, wouldn't want to `rm -rf` a folder by accident
     if not new_file:
-        continue
+        return
 
     print(f"Processing: {new_file}")
     subprocess.run(["rsync", "-rsvv", f'{host}:{host_data_path}/{new_file}', f'{local_working_path}'], check=True)
@@ -55,3 +55,13 @@ for new_file in new:
         raise
 
     subprocess.run(["rm", "-rf", f'{local_working_path}/{new_file}'], check=True)
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    future_to_new_files = {executor.submit(process_file, new_file): new_file for new_file in new}
+    for future in concurrent.futures.as_completed(future_to_new_files):
+        new_file = future_to_new_files[future]
+        try:
+            data = future.result()
+            print(f"Processed {new_file}")
+        except Exception as exc:
+            print('%r generated an exception: %s' % (new_file, exc))

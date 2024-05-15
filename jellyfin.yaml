@@ -32,15 +32,22 @@ spec:
           name: config
         - mountPath: "/media"
           name: media
-        - mountPath: "/transcodes"
-          name: tmpfs
+        #- mountPath: "/transcodes"
+        #  name: tmpfs
+        # Quicksync
+        - name: "render-device"
+          mountPath: "/dev/dri/renderD128"
         env:
         - name: PUID
           value: "1000"
         - name: PGID
           value: "1000"
-        - name: NVIDIA_DRIVER_CAPABILITIES
-          value: "all"
+        ## NVIDIA
+        #- name: NVIDIA_DRIVER_CAPABILITIES
+        #  value: "all"
+        # Quicksync
+        securityContext:
+            privileged: true
         livenessProbe:
           httpGet:
             path: /web/index.html
@@ -49,9 +56,10 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 30
           timeoutSeconds: 10
-        resources:
-          limits:
-            nvidia.com/gpu: 1
+        ## NVIDIA
+        #resources:
+        #  limits:
+        #    nvidia.com/gpu: 1
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -72,6 +80,10 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 12Gi
+      # Quicksync
+      - name: "render-device"
+        hostPath:
+          path: "/dev/dri/renderD128"
 ---
 apiVersion: v1
 kind: Service

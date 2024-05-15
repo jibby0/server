@@ -18,6 +18,22 @@ curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_EXEC="server --
 
 TODO
 
+## purging k3s image cache
+
+```
+$ sudo crictl rmi --prune
+```
+
+## ingress
+
+Uses traefik, the k3s default.
+
+externalTrafficPolicy: Local is used to preserve forwarded IPs.
+
+A `cluster-ingress=true` label is given to the node my router is pointing to. Some services use a nodeAffinity to request it.
+
+For traefik, this is a harmless optimization to reduce traffic hairpinning. For pods with `hostNetwork: true`, this ensures they run on the node with the right IP.
+
 # rook
 
 ## installing rook

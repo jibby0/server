@@ -227,65 +227,63 @@ cephClusterSpec:
   #   # These labels can be passed as LabelSelector to Prometheus
   #   monitoring:
 
-  # TODO adjust these once everything is deployed
-  #  osd in particular should be greater once all ceph nodes have 32GB
+  # https://home.robusta.dev/blog/stop-using-cpu-limits
   resources:
     mgr:
       limits:
-        cpu: "500m"
+        cpu: 0
         memory: "1Gi"
       requests:
-        cpu: "250m"
+        cpu: 0
         memory: "512Mi"
     mon:
       limits:
-        cpu: "1000m"
+        cpu: 0
         memory: "2Gi"
       requests:
-        cpu: "500m"
-        #memory: "1Gi"
-        memory: "500Mi"
+        cpu: 0
+        memory: "1Gi"
     osd:
       limits:
-        cpu: "1000m"
+        cpu: 0
         memory: "4Gi"
       requests:
-        cpu: "500m"
+        cpu: 0
         memory: "1Gi"
     prepareosd:
       limits:
-        cpu: "1000m"
+        cpu: 0
         memory: "12Gi"
       requests:
-        cpu: "500m"
+        cpu: 0
         memory: "500Mi"
     mgr-sidecar:
       limits:
-        cpu: "500m"
+        cpu: 0
         memory: "100Mi"
       requests:
-        cpu: "100m"
+        cpu: 0
         memory: "40Mi"
     crashcollector:
       limits:
-        cpu: "500m"
+        cpu: 0
         memory: "60Mi"
       requests:
-        cpu: "100m"
+        cpu: 0
         memory: "60Mi"
     logcollector:
       limits:
-        cpu: "500m"
+        cpu: 0
         memory: "1Gi"
       requests:
-        cpu: "100m"
+        cpu: 0
         memory: "100Mi"
     cleanup:
       limits:
-        cpu: "500m"
+        cpu: 0
         memory: "1Gi"
       requests:
-        cpu: "500m"
+        cpu: 0
         memory: "100Mi"
 
   # The option to automatically remove OSDs that are out and are safe to destroy.

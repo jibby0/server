@@ -5,15 +5,8 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
-    ports:
-      web:
-        exposedPort: 80
-      websecure:
-        exposedPort: 443
-
     additionalArguments:
       # Auto cert renewal via cloudflare
-      #- "--certificatesresolvers.letsencrypt.acme.email=some-email-here"
       - "--certificatesresolvers.letsencrypt.acme.email=joshbicking@comcast.net"
       - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
@@ -21,12 +14,15 @@ spec:
       - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
       - "--entrypoints.websecure.http.tls.domains[0].main=jibby.org"
       - "--entrypoints.websecure.http.tls.domains[0].sans=*.jibby.org"
+      - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,172.16.69.0/24"
       - "--entrypoints.web.http.redirections.entryPoint.to=:443"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
       # debug, uncomment for testing
+      #- "--log.level=DEBUG"
       #- "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+
 
     env:
       - name: CLOUDFLARE_EMAIL
@@ -47,14 +43,41 @@ spec:
       storageClass: ceph-block
 
     # Fix for acme.json file being changed to 660 from 600
+    # This can manifest as the incredibly unhelpful "the router <router name> uses a non-existent resolver: <resolver name>"
+    # https://github.com/traefik/traefik/issues/10241
     podSecurityContext:
-      fsGroup: null
+      fsGroup: 65532
+    deployment:
+      initContainers:
+      # The "volume-permissions" init container is required if you run into permission issues.
+      # Related issue: https://github.com/traefik/traefik-helm-chart/issues/396
+      - name: volume-permissions
+        image: busybox:latest
+        command: ["sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json"]
+        securityContext:
+          runAsNonRoot: true
+          runAsGroup: 65532
+          runAsUser: 65532
+        volumeMounts:
+          - name: data
+            mountPath: /data
+
 
     # ACME functionality is not supported when running Traefik as a DaemonSet
     #deployment:
     #  kind: DaemonSet
     service:
-      # type: ClusterIP
       spec:
+        # Required to show real IP to proxied services
         externalTrafficPolicy: Local
-    hostNetwork: true
+
+    # isn't necessary anymore, but reduces hairpinning
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: cluster-ingress
+              operator: In
+              values:
+              - "true"
