@@ -56,3 +56,20 @@ spec:
     protocol: TCP
     port: 7878
     targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: radarr
+  namespace: plex
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`radarr.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: radarr-service
+      port: 7878
+

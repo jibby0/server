@@ -102,3 +102,20 @@ spec:
             persistentVolumeClaim:
               claimName: media2-pvc
           restartPolicy: OnFailure
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: duplicati
+  namespace: plex
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`duplicati.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: duplicati-service
+      port: 8200
+

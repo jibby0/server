@@ -6,23 +6,36 @@ metadata:
 spec:
   valuesContent: |-
     additionalArguments:
+      - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,172.16.69.0/24"
+      - "--entrypoints.web.http.redirections.entryPoint.to=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+
       # Auto cert renewal via cloudflare
       - "--certificatesresolvers.letsencrypt.acme.email=joshbicking@comcast.net"
       - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
       - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
+
+      # Main
       - "--entrypoints.websecure.http.tls.domains[0].main=jibby.org"
       - "--entrypoints.websecure.http.tls.domains[0].sans=*.jibby.org"
-      - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,172.16.69.0/24"
-      - "--entrypoints.web.http.redirections.entryPoint.to=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # LAN-only
+      - "--entrypoints.websecure.http.tls.domains[1].main=lan.jibby.org"
+      - "--entrypoints.websecure.http.tls.domains[1].sans=*.lan.jibby.org"
+
+      # Configuration for extra routers
+      - "--providers.file.directory=/config"
 
       - "--log.level=INFO"
       # debug, uncomment for testing
       #- "--log.level=DEBUG"
       #- "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
 
+    volumes:
+      - name: traefik-config
+        mountPath: "/config"
+        type: configMap
 
     env:
       - name: CLOUDFLARE_EMAIL

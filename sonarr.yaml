@@ -56,3 +56,20 @@ spec:
     protocol: TCP
     port: 8989
     targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarr
+  namespace: plex
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`sonarr.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: sonarr-service
+      port: 8989
+
