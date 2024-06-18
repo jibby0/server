@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: minio
-        image: "quay.io/minio/minio:RELEASE.2023-09-16T01-01-47Z"
+        image: "quay.io/minio/minio:RELEASE.2024-01-16T16-07-38Z"
         command: ["minio", "server", "/data", "--console-address", ":9090"]
         ports:
         - containerPort: 9000
@@ -42,6 +42,9 @@ spec:
           failureThreshold: 10
           initialDelaySeconds: 30
           periodSeconds: 10
+        resources:
+          limits:
+            memory: 7Gi
       volumes:
       - name: data
         persistentVolumeClaim:

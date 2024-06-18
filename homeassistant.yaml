@@ -83,6 +83,8 @@ spec:
     metadata:
       labels:
         app: whisper
+      annotations:
+        backup.velero.io/backup-volumes-excludes: tmpfs
     spec:
       affinity:
         nodeAffinity:
@@ -128,6 +130,8 @@ spec:
     metadata:
       labels:
         app: piper
+      annotations:
+        backup.velero.io/backup-volumes-excludes: tmpfs
     spec:
       affinity:
         nodeAffinity:
@@ -171,6 +175,8 @@ spec:
     metadata:
       labels:
         app: openwakeword
+      annotations:
+        backup.velero.io/backup-volumes-excludes: tmpfs
     spec:
       affinity:
         nodeAffinity:

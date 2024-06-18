@@ -102,3 +102,5 @@ machine-learning:
       type: pvc
       accessMode: ReadWriteOnce
       storageClass: ceph-block
+  podAnnotations:
+    backup.velero.io/backup-volumes-excludes: cache

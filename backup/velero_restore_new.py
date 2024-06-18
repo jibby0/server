@@ -46,10 +46,7 @@ def main():
         subprocess.run(
             ["/usr/local/bin/kubectl", "delete", "namespace", namespace],
             env=k3s_env,
-            check=False, # OK if this namespace doesn't exist,
         )
-
-    # TODO check for pv with mount points in these namespaces
 
     subprocess.run(
         ["/usr/local/bin/velero", "restore", "create", "--from-backup", newest_backup['metadata']['name'], "--include-namespaces", ",".join(namespaces), "--wait"],

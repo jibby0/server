@@ -22,7 +22,7 @@
 ##
 image:
   repository: nextcloud
-  tag: 29.0.0-fpm
+  tag: 29.0.0-apache
   pullPolicy: IfNotPresent
   # pullSecrets:
   #   - myRegistrKeySecretName
@@ -244,7 +244,8 @@ nextcloud:
 
 nginx:
   ## You need to set an fpm version of the image for nextcloud if you want to use nginx!
-  enabled: true
+  # disabling for large uploads on android(?)
+  enabled: false
   image:
     repository: nginx
     tag: alpine
@@ -275,6 +276,7 @@ nginx:
           access_log  /var/log/nginx/access.log  main;
           # CHANGE for large file uploads
           proxy_read_timeout 3600;
+          fastcgi_read_timeout 300s;
 
           sendfile        on;
           #tcp_nopush     on;

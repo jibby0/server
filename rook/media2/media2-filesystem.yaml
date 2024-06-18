@@ -35,11 +35,3 @@ spec:
       - key: storage-node
         operator: Exists
     priorityClassName: system-cluster-critical
-    # 4GiB is recommended
-    resources:
-      limits:
-        cpu: "300m"
-        memory: 1Gi
-      requests:
-        cpu: "100m"
-        memory: 500Mi

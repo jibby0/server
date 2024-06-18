@@ -24,6 +24,28 @@ TODO
 $ sudo crictl rmi --prune
 ```
 
+## limiting log size
+
+k3s logs a lot.
+
+In /etc/systemd/journald.conf, set "SystemMaxUse=100M"
+
+In /etc/logrotate.conf, set "size 100M"
+
+## purging containerd snapshots
+
+https://github.com/containerd/containerd/blob/main/docs/content-flow.md
+
+containerd really doesn't want you batch-deleting snapshots.
+
+https://github.com/k3s-io/k3s/issues/1905#issuecomment-820554037
+
+```
+for sha in $(sudo k3s ctr snapshot usage | awk '{print $1}'); do sudo k3s ctr snapshot rm $sha && echo $sha; done
+```
+
+Run this a few times until it stops returning results.
+
 ## ingress
 
 Uses traefik, the k3s default.
@@ -308,5 +330,3 @@ TODO. This would be nice for one-off Windows game servers.
   - can't go through cloudflare without cloudflared on the client
   - cloudflared running in the gogs pod?
   - do gitea or gitlab have better options?
-- Something better than `expose` for accessing internal services
-  - short term, capture the resource definition YAML & save it alongside the service
