@@ -10,7 +10,7 @@ if len(sys.argv) != 4:
 lidarr_server, lidarr_api_key, music_folder = sys.argv[1:4]
 
 resp = requests.get(
-    f"http://{lidarr_server}/api/v1/artist",
+    f"{lidarr_server}/api/v1/artist",
     headers={"Authorization": f"Bearer {lidarr_api_key}"}
     )
 artists = resp.json()

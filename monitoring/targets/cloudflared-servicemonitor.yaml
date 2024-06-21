@@ -15,4 +15,3 @@ spec:
   selector:
     matchLabels:
       app: cloudflared-metrics
-

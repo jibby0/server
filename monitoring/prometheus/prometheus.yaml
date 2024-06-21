@@ -25,6 +25,7 @@ spec:
       - traefik
       - rook-ceph-mgr
       - cloudflared
+      - shelly-plug-prometheus
   serviceMonitorNamespaceSelector:
     matchExpressions:
     - key: kubernetes.io/metadata.name
@@ -39,4 +40,4 @@ spec:
         storageClassName: ceph-block
         resources:
           requests:
-            storage: 20Gi
+            storage: 50Gi
