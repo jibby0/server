@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shelly-plug-exporter
+  namespace: homeassistant
+  annotations:
+    prometheus.io/path: /probe
+    prometheus.io/port: "8080"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    matchLabels:
+      app: shelly-plug-exporter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: shelly-plug-exporter
+    spec:
+      containers:
+      - name: shelly-plug-exporter
+        image: jibby0/shelly-plug-exporter:24.2.0-fork
+        ports:
+        - containerPort: 8080
+          name: metrics
+        env:
+        - name: SHELLY_HOST_SHELLYPLUSES
+          value: 172.16.69.85,172.16.69.173
+        - name: SHELLY_AUTH_USERNAME
+          value: admin
+        - name: SHELLY_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: shelly-plug-exporter
+              key: password
+              optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shelly-plug-exporter
+  namespace: homeassistant
+  labels:
+    app: shelly-plug-exporter
+spec:
+  selector:
+    app: shelly-plug-exporter
+  type: ClusterIP
+  ports:
+  - name: metrics
+    protocol: TCP
+    port: 8080
+    targetPort: metrics

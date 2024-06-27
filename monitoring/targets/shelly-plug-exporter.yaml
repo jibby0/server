@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: shelly-plug-exporter
+    name: shelly-plug-exporter
+  name: shelly-plug-exporter
+  namespace: monitoring
+spec:
+  endpoints:
+  - port: metrics
+    path: /probe
+  namespaceSelector:
+    matchNames:
+    - homeassistant
+  selector:
+    matchLabels:
+      app: shelly-plug-exporter

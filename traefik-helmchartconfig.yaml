@@ -35,6 +35,7 @@ spec:
     ports:
       metrics:
         expose: true
+        exposedPort: 9101
     volumes:
       - name: traefik-config
         mountPath: "/config"
