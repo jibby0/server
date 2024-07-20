@@ -88,7 +88,7 @@ spec:
         # Required to show real IP to proxied services
         externalTrafficPolicy: Local
 
-    # isn't necessary anymore, but reduces hairpinning
+    # pin pod to cluster-ingress node, so ServiceLB gives it the right external IP
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:

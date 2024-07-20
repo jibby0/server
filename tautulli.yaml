@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tautulli
+  namespace: plex
+spec:
+  selector:
+    matchLabels:
+      app: tautulli
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tautulli
+    spec:
+      containers:
+      - name: tautulli
+        image: linuxserver/tautulli:2.14.3
+        ports:
+        - containerPort: 8181
+          name: http-web-svc
+        env:
+        - name: TZ
+          value: America/New_York
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: "/config"
+          name: config
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: tautulli-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tautulli-service
+  namespace: plex
+spec:
+  selector:
+    app: tautulli
+  type: ClusterIP
+  ports:
+  - name: tautulli-web-port
+    protocol: TCP
+    port: 8181
+    targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: tautulli
+  namespace: plex
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`tautulli.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: tautulli-service
+      port: 8181

@@ -15,7 +15,9 @@
 #    - Move file to /local/data
 
 # */1 * * * * /usr/bin/run-one /usr/bin/python3 /path/to/seedbox_sync.py <seedbox host> /seedbox/path/to/completed/ /local/path/to/downloading /local/path/to/processed /local/path/to/ready 2>&1 | /usr/bin/logger -t seedbox
-# Or run it in a k8s cronjob.
+# Or run it in a k8s cronjob. See seedbox-sync.yaml
+# kubectl -n plex create configmap seedbox-sync --from-file=seedbox_sync.py
+
 
 import subprocess
 import sys

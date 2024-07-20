@@ -35,6 +35,12 @@ spec:
               name: shelly-plug-exporter
               key: password
               optional: false
+        - name: SHELLY_REQUEST_TIMEOUT
+          value: 30s
+        - name: SERVER_TIMEOUT_READ
+          value: 30s
+        - name: SERVER_TIMEOUT_WRITE
+          value: 30s
 ---
 apiVersion: v1
 kind: Service

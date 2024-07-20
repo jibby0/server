@@ -1,0 +1,87 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: seedbox-sync
+  namespace: plex
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: seedbox-sync
+          annotations:
+            backup.velero.io/backup-volumes-excludes: media
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: seedbox-sync
+            image: jibby0/seedbox-sync
+            command:
+            - /bin/sh
+            - -c
+            # User 1000 runs the script to set folder permissions properly.
+            # We can't change a secret volume owner, so copy the files & chown
+            # them ourselves.
+            - |
+              mkdir /home/nonroot/.ssh &&
+              cp -Lr /ssh/config /ssh/known_hosts /ssh/seedbox_ecdsa /home/nonroot/.ssh &&
+              chmod 400 ~/.ssh/* &&
+              python3 /script/seedbox_sync.py $SEEDBOX_HOST $PATH_TO_COMPLETED $LOCAL_PATH_TO_DOWNLOADING $LOCAL_PATH_TO_PROCESSED $LOCAL_PATH_TO_READY
+            env:
+              - name: LIDARR_MUSIC_PATH
+                value: /media/Music/
+              - name: SEEDBOX_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: seedbox-sync
+                    key: seedbox-host
+              - name: PATH_TO_COMPLETED
+                valueFrom:
+                  secretKeyRef:
+                    name: seedbox-sync
+                    key: path-to-completed
+              - name: LOCAL_PATH_TO_DOWNLOADING
+                valueFrom:
+                  secretKeyRef:
+                    name: seedbox-sync
+                    key: local-path-to-downloading
+              - name: LOCAL_PATH_TO_PROCESSED
+                valueFrom:
+                  secretKeyRef:
+                    name: seedbox-sync
+                    key: local-path-to-processed
+              - name: LOCAL_PATH_TO_READY
+                valueFrom:
+                  secretKeyRef:
+                    name: seedbox-sync
+                    key: local-path-to-ready
+            volumeMounts:
+            - mountPath: "/media"
+              name: media
+            - mountPath: /script
+              name: seedbox-sync
+            - mountPath: /ssh
+              name: seedbox-sync-ssh
+            securityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
+          volumes:
+          - name: media
+            persistentVolumeClaim:
+              claimName: plex-pvc
+          - name: seedbox-sync
+            configMap:
+              name: seedbox-sync
+              items:
+              - key: seedbox_sync.py
+                path: seedbox_sync.py
+          - name: seedbox-sync-ssh
+            secret:
+              secretName: seedbox-sync-ssh
+              defaultMode: 0777

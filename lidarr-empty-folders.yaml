@@ -1,0 +1,56 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: lidarr-empty-folders
+  namespace: plex
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: lidarr-empty-folders
+          annotations:
+            backup.velero.io/backup-volumes-excludes: media
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          restartPolicy: OnFailure
+          containers:
+          - name: lidarr-empty-folders
+            image: jibby0/lidarr-empty-folders
+            command:
+            - /bin/sh
+            - -c
+            - python3 /script/lidarr_empty_folders.py $LIDARR_HOST $LIDARR_API_KEY $LIDARR_MUSIC_PATH
+            env:
+              - name: LIDARR_HOST
+                value: https://lidarr.lan.jibby.org
+              - name: LIDARR_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: lidarr-empty-folders
+                    key: api-key
+              - name: LIDARR_MUSIC_PATH
+                value: /media/Music/
+            volumeMounts:
+            - mountPath: "/media"
+              name: media
+            - mountPath: /script
+              name: lidarr-empty-folders
+          volumes:
+          - name: media
+            persistentVolumeClaim:
+              claimName: plex-pvc
+          - name: lidarr-empty-folders
+            configMap:
+              name: lidarr-empty-folders
+              items:
+              - key: lidarr_empty_folders.py
+                path: lidarr_empty_folders.py

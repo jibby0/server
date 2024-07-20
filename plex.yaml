@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: plex
-        image: linuxserver/plex:version-1.40.1.8227-c0dd5a73e
+        image: linuxserver/plex:version-1.40.3.8555-fef15d30c
         # for debugging
         # command: ["/bin/sh"]
         # args: ["-c", "sleep 3600"]
