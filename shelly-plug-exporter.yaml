@@ -9,6 +9,8 @@ metadata:
     prometheus.io/port: "8080"
     prometheus.io/scrape: "true"
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: shelly-plug-exporter
@@ -41,6 +43,10 @@ spec:
           value: 30s
         - name: SERVER_TIMEOUT_WRITE
           value: 30s
+        - name: LOG_DEBUG
+          value: "1"
+        - name: LOG_JSON
+          value: "0"
 ---
 apiVersion: v1
 kind: Service

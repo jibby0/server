@@ -5,6 +5,8 @@ metadata:
   name: bazarr
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: bazarr
@@ -18,7 +20,7 @@ spec:
     spec:
       containers:
       - name: bazarr
-        image: lscr.io/linuxserver/bazarr:development-version-v1.4.3-beta.31
+        image: lscr.io/linuxserver/bazarr:development-v1.4.4-beta.24-ls617
         ports:
         - containerPort: 6767
           name: http-web-svc

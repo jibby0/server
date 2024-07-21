@@ -5,6 +5,8 @@ metadata:
   name: sonarr
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: sonarr
@@ -18,7 +20,7 @@ spec:
     spec:
       containers:
       - name: sonarr
-        image: lscr.io/linuxserver/sonarr:develop-4.0.0.752-ls25
+        image: lscr.io/linuxserver/sonarr:develop-4.0.8.1902-ls79
         ports:
         - containerPort: 8989
           name: http-web-svc

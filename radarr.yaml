@@ -5,6 +5,8 @@ metadata:
   name: radarr
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: radarr
@@ -18,7 +20,7 @@ spec:
     spec:
       containers:
       - name: radarr
-        image: lscr.io/linuxserver/radarr:nightly-5.3.1.8427-ls148
+        image: lscr.io/linuxserver/radarr:nightly-5.8.3.8932-ls42
         ports:
         - containerPort: 7878
           name: http-web-svc
