@@ -1,7 +1,7 @@
-# From https://github.com/rook/rook/blob/v1.11.11/deploy/charts/rook-ceph/values.yaml
+# From https://github.com/rook/rook/blob/v1.12.11/deploy/charts/rook-ceph/values.yaml
 # export ROOK_OPERATOR_NAMESPACE=rook-ceph
 # export ROOK_CLUSTER_NAMESPACE=rook-ceph
-# KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install --namespace rook-ceph rook-ceph rook-release/rook-ceph -f rook/rook-ceph-operator-values.yaml --version 1.10.13
+# KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install --namespace rook-ceph rook-ceph rook-release/rook-ceph -f rook/rook-ceph-operator-values.yaml --version 1.12.11
 # Default values for rook-ceph-operator
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -11,7 +11,7 @@ image:
   repository: rook/ceph
   # -- Image tag
   # @default -- `master`
-  tag: v1.11.11
+  tag: v1.12.11
   # -- Image pull policy
   pullPolicy: IfNotPresent
 
@@ -58,6 +58,10 @@ logLevel: INFO
 
 # -- If true, create & use RBAC resources
 rbacEnable: true
+
+rbacAggregate:
+  # -- If true, create a ClusterRole aggregated to [user facing roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) for objectbucketclaims
+  enableOBCs: false
 
 # -- If true, create & use PSP resources
 pspEnable: true
@@ -153,6 +157,10 @@ csi:
   # -- CSI CephFS plugin daemonset update strategy, supported values are OnDelete and RollingUpdate
   # @default -- `RollingUpdate`
   cephFSPluginUpdateStrategy:
+
+  # -- A maxUnavailable parameter of CSI cephFS plugin daemonset update strategy.
+  # @default -- `1`
+  cephFSPluginUpdateStrategyMaxUnavailable:
 
   # -- CSI NFS plugin daemonset update strategy, supported values are OnDelete and RollingUpdate
   # @default -- `RollingUpdate`
@@ -467,6 +475,8 @@ csi:
     enabled: false
     # -- Service monitor scrape interval
     interval: 5s
+    # -- ServiceMonitor additional labels
+    labels: {}
 
   # -- Kubelet root directory path (if the Kubelet uses a different path for the `--root-dir` flag)
   # @default -- `/var/lib/kubelet`
@@ -474,32 +484,32 @@ csi:
 
   cephcsi:
     # -- Ceph CSI image
-    # @default -- `quay.io/cephcsi/cephcsi:v3.8.0`
+    # @default -- `quay.io/cephcsi/cephcsi:v3.9.0`
     image:
 
   registrar:
     # -- Kubernetes CSI registrar image
-    # @default -- `registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.7.0`
+    # @default -- `registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0`
     image:
 
   provisioner:
     # -- Kubernetes CSI provisioner image
-    # @default -- `registry.k8s.io/sig-storage/csi-provisioner:v3.4.0`
+    # @default -- `registry.k8s.io/sig-storage/csi-provisioner:v3.5.0`
     image:
 
   snapshotter:
     # -- Kubernetes CSI snapshotter image
-    # @default -- `registry.k8s.io/sig-storage/csi-snapshotter:v6.2.1`
+    # @default -- `registry.k8s.io/sig-storage/csi-snapshotter:v6.2.2`
     image:
 
   attacher:
     # -- Kubernetes CSI Attacher image
-    # @default -- `registry.k8s.io/sig-storage/csi-attacher:v4.1.0`
+    # @default -- `registry.k8s.io/sig-storage/csi-attacher:v4.3.0`
     image:
 
   resizer:
     # -- Kubernetes CSI resizer image
-    # @default -- `registry.k8s.io/sig-storage/csi-resizer:v1.7.0`
+    # @default -- `registry.k8s.io/sig-storage/csi-resizer:v1.8.0`
     image:
 
   # -- Image pull policy
@@ -518,7 +528,7 @@ csi:
     # -- Enable CSIAddons
     enabled: false
     # -- CSIAddons Sidecar image
-    image: "quay.io/csiaddons/k8s-sidecar:v0.5.0"
+    image: "quay.io/csiaddons/k8s-sidecar:v0.7.0"
 
   nfs:
     # -- Enable the nfs csi driver
@@ -570,6 +580,8 @@ csi:
 
 # -- Enable discovery daemon
 enableDiscoveryDaemon: false
+# -- Set the discovery daemon device discovery interval (default to 60m)
+discoveryDaemonInterval: 60m
 
 # -- The timeout for ceph commands in seconds
 cephCommandsTimeoutSeconds: "15"
