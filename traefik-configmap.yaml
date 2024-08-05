@@ -45,20 +45,3 @@ data:
       serversTransports:
         proxmox:
           insecureSkipVerify: true
-  ceph.yaml: |
-    http:
-      routers:
-        ceph:
-          rule: Host(`ceph.lan.jibby.org`)
-          service: ceph
-      services:
-        ceph:
-          loadBalancer:
-            serversTransport: "ceph"
-            servers:
-              - url: https://172.16.69.30:8443
-              - url: https://172.16.69.31:8443
-              - url: https://172.16.69.32:8443
-      serversTransports:
-        ceph:
-          insecureSkipVerify: true
