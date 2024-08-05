@@ -27,7 +27,7 @@ toolbox:
   # -- Enable Ceph debugging pod deployment. See [toolbox](../Troubleshooting/ceph-toolbox.md)
   enabled: true
   # -- Toolbox image, defaults to the image used by the Ceph cluster
-  image: #quay.io/ceph/ceph:v17.2.6
+  image: quay.io/ceph/ceph:v17.2.7
   # -- Toolbox tolerations
   tolerations: []
   # -- Toolbox affinity
@@ -90,8 +90,7 @@ cephClusterSpec:
     # versions running within the cluster. See tags available at https://hub.docker.com/r/ceph/ceph/tags/.
     # If you want to be more precise, you can always use a timestamp tag such quay.io/ceph/ceph:v15.2.11-20200419
     # This tag might not contain a new Ceph version, just security fixes from the underlying operating system, which will reduce vulnerabilities
-    # image: quay.io/ceph/ceph:v17.2.6
-    image: quay.io/ceph/ceph:v16.2.7
+    image: quay.io/ceph/ceph:v17.2.7
     # Whether to allow unsupported versions of Ceph. Currently `pacific`, `quincy`, and `reef` are supported.
     # Future versions such as `squid` (v19) would require this to be set to `true`.
     # Do not set to true in production.
@@ -438,6 +437,8 @@ ingress:
     ## to set the ingress class
     # ingressClassName: nginx
 
+# TODO a ssd blockpool
+
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
 cephBlockPools:
@@ -447,6 +448,7 @@ cephBlockPools:
       failureDomain: host
       replicated:
         size: 3
+      deviceClass: hdd
       # Enables collecting RBD per-image IO statistics by enabling dynamic OSD performance counters. Defaults to false.
       # For reference: https://docs.ceph.com/docs/master/mgr/prometheus/#rbd-io-statistics
       # enableRBDStats: true
@@ -510,12 +512,14 @@ cephFileSystems:
       metadataPool:
         replicated:
           size: 3
+        deviceClass: ssd
       dataPools:
         - failureDomain: host
           replicated:
             size: 3
           # Optional and highly recommended, 'data0' by default, see https://github.com/rook/rook/blob/master/Documentation/CRDs/Shared-Filesystem/ceph-filesystem-crd.md#pools
           name: data0
+          deviceClass: hdd
       metadataServer:
         activeCount: 1
         activeStandby: true
@@ -600,11 +604,13 @@ cephObjectStores:
         failureDomain: host
         replicated:
           size: 3
+        deviceClass: ssd
       dataPool:
         failureDomain: host
         erasureCoded:
           dataChunks: 2
           codingChunks: 1
+        deviceClass: hdd
       preservePoolsOnDelete: true
       gateway:
         placement:

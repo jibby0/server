@@ -1,3 +1,4 @@
+# TODO move to the main helm values
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:

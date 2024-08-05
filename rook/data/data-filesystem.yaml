@@ -1,3 +1,5 @@
+# TODO move to the main helm values
+# TODO deviceClass: hdd
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:

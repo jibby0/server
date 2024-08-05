@@ -1,3 +1,4 @@
+# TODO move to the main helm values? or remove? or start using?
 apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:

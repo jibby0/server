@@ -10,6 +10,8 @@ metadata:
   name: plex
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: plex
@@ -23,7 +25,7 @@ spec:
     spec:
       containers:
       - name: plex
-        image: linuxserver/plex:version-1.40.3.8555-fef15d30c
+        image: linuxserver/plex:1.40.4.8679-424562606-ls224
         # for debugging
         # command: ["/bin/sh"]
         # args: ["-c", "sleep 3600"]
