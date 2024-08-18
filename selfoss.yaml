@@ -25,6 +25,8 @@ metadata:
   name: selfoss
   namespace: selfoss
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: selfoss

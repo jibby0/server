@@ -40,6 +40,8 @@ metadata:
   name: mastodon
   namespace: mastodon
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mastodon

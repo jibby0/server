@@ -1,3 +1,4 @@
+# TODO redo this as a .lan domain
 # k3s doesn't expose the traefik dashboard in a service by default
 apiVersion: v1
 kind: Service

@@ -5,6 +5,8 @@ metadata:
   name: duplicati
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: duplicati
@@ -118,4 +120,6 @@ spec:
     - kind: Service
       name: duplicati-service
       port: 8200
-
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

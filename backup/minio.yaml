@@ -10,6 +10,8 @@ metadata:
   name: minio
   namespace: minio
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: minio

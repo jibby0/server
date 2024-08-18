@@ -74,3 +74,6 @@ spec:
     - kind: Service
       name: sonarr-service
       port: 8989
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

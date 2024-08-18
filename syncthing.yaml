@@ -5,6 +5,8 @@ metadata:
   namespace: plex
   name: syncthing
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:

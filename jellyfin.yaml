@@ -10,6 +10,8 @@ metadata:
   name: jellyfin
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: jellyfin

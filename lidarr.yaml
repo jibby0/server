@@ -74,4 +74,6 @@ spec:
     - kind: Service
       name: lidarr-service
       port: 8686
-
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

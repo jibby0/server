@@ -88,6 +88,11 @@ spec:
         # Required to show real IP to proxied services
         externalTrafficPolicy: Local
 
+    providers:
+      kubernetesCRD:
+        # Allows IngressRoutes to use middleware from a different namespace
+        allowCrossNamespace: true
+
     # pin pod to cluster-ingress node, so ServiceLB gives it the right external IP
     affinity:
       nodeAffinity:

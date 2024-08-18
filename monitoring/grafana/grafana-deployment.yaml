@@ -6,6 +6,8 @@ metadata:
   name: grafana
   namespace: monitoring
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:

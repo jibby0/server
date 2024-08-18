@@ -74,4 +74,6 @@ spec:
     - kind: Service
       name: radarr-service
       port: 7878
-
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

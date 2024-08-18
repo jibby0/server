@@ -5,6 +5,8 @@ metadata:
   name: homeassistant
   namespace: homeassistant
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: homeassistant
@@ -75,6 +77,8 @@ metadata:
   name: whisper
   namespace: homeassistant
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: whisper
@@ -122,6 +126,8 @@ metadata:
   name: piper
   namespace: homeassistant
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: piper
@@ -167,6 +173,8 @@ metadata:
   name: openwakeword
   namespace: homeassistant
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: openwakeword
@@ -214,6 +222,8 @@ metadata:
   name: mosquitto
   namespace: homeassistant
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mosquitto

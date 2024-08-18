@@ -14,4 +14,6 @@ spec:
     - kind: Service
       name: grafana
       port: 3000
-
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

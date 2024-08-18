@@ -10,6 +10,8 @@ metadata:
   name: miniflux
   namespace: miniflux
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: miniflux

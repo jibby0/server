@@ -4,12 +4,21 @@ metadata:
   name: traefik-config
   namespace: kube-system
 data:
+  middlewares.yaml: |
+    http:
+      middlewares:
+        lanonly:
+          ipWhiteList:
+            sourceRange:
+              - 172.16.69.0/24
   octoprint.yaml: |
     http:
       routers:
         octoprint:
           rule: Host(`octoprint.lan.jibby.org`)
           service: octoprint
+          middlewares:
+            - "lanonly"
       services:
         octoprint:
           loadBalancer:
@@ -21,6 +30,8 @@ data:
         pikvm:
           rule: Host(`pikvm.lan.jibby.org`)
           service: pikvm
+          middlewares:
+            - "lanonly"
       services:
         pikvm:
           loadBalancer:
@@ -36,6 +47,8 @@ data:
         proxmox:
           rule: Host(`proxmox.lan.jibby.org`)
           service: proxmox
+          middlewares:
+            - "lanonly"
       services:
         proxmox:
           loadBalancer:

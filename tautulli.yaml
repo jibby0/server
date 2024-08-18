@@ -5,6 +5,8 @@ metadata:
   name: tautulli
   namespace: plex
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: tautulli
@@ -16,7 +18,7 @@ spec:
     spec:
       containers:
       - name: tautulli
-        image: linuxserver/tautulli:2.14.3
+        image: linuxserver/tautulli:2.14.4
         ports:
         - containerPort: 8181
           name: http-web-svc
@@ -65,3 +67,6 @@ spec:
     - kind: Service
       name: tautulli-service
       port: 8181
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

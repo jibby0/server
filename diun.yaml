@@ -43,6 +43,8 @@ metadata:
   namespace: diun
   name: diun
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:

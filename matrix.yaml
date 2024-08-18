@@ -25,6 +25,8 @@ metadata:
   name: matrix
   namespace: matrix
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: matrix

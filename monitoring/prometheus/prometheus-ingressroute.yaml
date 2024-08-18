@@ -14,5 +14,6 @@ spec:
     - kind: Service
       name: prometheus
       port: 9090
-
-
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

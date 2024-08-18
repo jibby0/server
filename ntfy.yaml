@@ -23,6 +23,8 @@ metadata:
   name: ntfy
   namespace: ntfy
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: ntfy
