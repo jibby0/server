@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watchlistarr
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: watchlistarr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: watchlistarr
+    spec:
+      containers:
+      - name: watchlistarr
+        image: nylonee/watchlistarr:0.2.5
+        env:
+        - name: LOG_LEVEL
+          value: DEBUG
+        volumeMounts:
+        - name: watchlistarr-secret
+          readOnly: true
+          mountPath: /app/config
+      volumes:
+      - name: watchlistarr-secret
+        secret:
+          secretName: watchlistarr-secret

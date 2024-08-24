@@ -1,3 +1,8 @@
+# Without this, internal services would be accessible by forcing resolution of
+# an internal domain into the external IP. Eg:
+#
+#  curl -v --resolve sonarr.lan.jibby.org:443:<external IP> https://sonarr.lan.jibby.org
+#
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -7,4 +12,5 @@ metadata:
 spec:
   ipWhiteList:
     sourceRange:
-      - 172.16.69.0/24
+      - 172.16.69.0/24 # LAN access
+      - 10.42.0.0/16   # Pod access

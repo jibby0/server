@@ -9,14 +9,18 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 ## installing k3s
 
 ```
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --cluster-init" sh -
+# First node
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.29.6+k3s2 INSTALL_K3S_EXEC="server --cluster-init" sh -
 export NODE_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
-curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_EXEC="server --server https://192.168.122.87:6443" INSTALL_K3S_VERSION=v1.23.6+k3s1 sh -
+
+# Remaining nodes
+curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_VERSION=v1.29.6+k3s2 INSTALL_K3S_EXEC="server --server https://<server node ip>:6443 --kubelet-arg=allowed-unsafe-sysctls=net.ipv4.*,net.ipv6.conf.all.forwarding" sh -
 ```
+
 
 ## upgrading k3s
 
-TODO
+https://docs.k3s.io/upgrades/automated
 
 ## purging k3s image cache
 
@@ -26,7 +30,7 @@ $ sudo crictl rmi --prune
 
 ## limiting log size
 
-k3s logs a lot.
+(Shouldn't be a problem on newer Debian, where rsyslog is not in use.)
 
 In /etc/systemd/journald.conf, set "SystemMaxUse=100M"
 
@@ -60,15 +64,15 @@ For traefik, this is a harmless optimization to reduce traffic hairpinning. For 
 
 ## installing rook
 
-```
-KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph:1.9.2 -f rook-ceph-values.yaml
-
-KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install --create-namespace --namespace rook-ceph rook-ceph-cluster --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster:1.9.2 -f rook-ceph-cluster-values.yaml
-```
+See `rook/rook-ceph-operator-values.yaml` and `rook/rook-ceph-cluster-values.yaml`.
 
 ## upgrading rook
 
-TODO
+https://rook.io/docs/rook/latest-release/Upgrade/rook-upgrade/?h=upgrade
+
+## upgrading ceph
+
+https://rook.io/docs/rook/latest-release/Upgrade/ceph-upgrade/?h=upgrade
 
 ## Finding the physical device for an OSD
 
@@ -222,7 +226,7 @@ Ensure the pods on the namespace are Running.
 
 Test GPU passthrough by applying `examples/cuda-pod.yaml`, then exec-ing into it & running `nvidia-smi`.
 
-## Sharing GPU
+## Share NVIDIA GPU
 
 https://github.com/NVIDIA/k8s-device-plugin#shared-access-to-gpus-with-cuda-time-slicing
 
@@ -270,11 +274,21 @@ Tried https://github.com/prometheus-operator/kube-prometheus. The only way to pe
 
 # Exposing internal services
 
+## kubectl expose
+
 ```
 kubectl expose svc/some-service --name=some-service-external --port 1234 --target-port 1234 --type LoadBalancer
 ```
 
 Service will then be available on port 1234 of any k8s node.
+
+## using a lan-only domain
+
+An A record for `lan.jibby.org` & `*.lan.jibby.org` points to an internal IP.
+
+To be safe, a middleware is included to filter out source IPs outside of the LAN network & k3s CIDR. See `traefik/middleware-lanonly.yaml`.
+
+Then, internal services can be exposed with an IngressRoute, as a subdomain of `lan.jibby.org`. See `sonarr.yaml`'s IngressRoute.
 
 # Backups
 
@@ -319,14 +333,34 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install openebs --namespace openebs op
 This is a nice PVC option for simpler backup target setups.
 
 
-# libvirtd
+# [WIP] Still to do
 
-TODO. This would be nice for one-off Windows game servers.
-
-# Still to do
-
+- real failover
+  - https://metallb.universe.tf/concepts/layer2/
 - bittorrent + VPN
 - gogs ssh ingress?
   - can't go through cloudflare without cloudflared on the client
   - cloudflared running in the gogs pod?
   - do gitea or gitlab have better options?
+- Bonded interface for n5105s
+- more reproducable node setup
+  - newer kernel too
+- more reproducable kubernetes setup (? too much work)
+  - https://elemental.docs.rancher.com/quickstart-cli/
+- authelia for internal services
+  - maybe once the helm chart is a little smoother
+  - can it allow tidbyt access?
+
+# [WIP] What's important on each node?
+
+- /var/lib/rook
+- /var/lib/rancher
+- /run/k3s
+- /var/lib/kubelet/pods
+- /etc/rancher/k3s/
+
+- /etc/sysctl.d/98-openfiles.conf
+   fs.inotify.max_user_instances = 1024
+   fs.inotify.max_user_watches = 1048576
+- non-free: https://wiki.debian.org/SourcesList#Example_sources.list
+  apt install firmware-misc-nonfree

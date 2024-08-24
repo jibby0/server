@@ -56,3 +56,12 @@ spec:
     - kind: Service
       name: whoami-service
       port: 80
+  - kind: Rule
+    match: Host(`whoami.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: whoami-service
+      port: 80
+    middlewares:
+    - name: lanonly
+      namespace: kube-system

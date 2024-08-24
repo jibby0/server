@@ -28,7 +28,7 @@ spec:
           name: metrics
         env:
         - name: SHELLY_HOST_SHELLYPLUSES
-          value: 172.16.69.85,172.16.69.173,172.16.69.14
+          value: 172.16.69.80,172.16.69.81,172.16.69.82,172.16.69.83,172.16.69.84
         - name: SHELLY_AUTH_USERNAME
           value: admin
         - name: SHELLY_AUTH_PASSWORD
