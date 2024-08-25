@@ -1,9 +1,8 @@
 # TODO move to the main helm values
-# TODO deviceClass: hdd
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
-  name: data
+  name: seedbox
   namespace: rook-ceph
 spec:
   metadataPool:
@@ -11,7 +10,8 @@ spec:
       size: 3
   dataPools:
     - replicated:
-        size: 3
+        size: 2
+      deviceClass: hdd
   metadataServer:
     activeCount: 1
     activeStandby: true
@@ -27,11 +27,3 @@ spec:
       tolerations:
       - key: storage-node
         operator: Exists
-    priorityClassName: system-cluster-critical
-    resources:
-      limits:
-        cpu: "2"
-        memory: 4Gi
-      requests:
-        cpu: "1"
-        memory: 4Gi

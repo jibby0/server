@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: seedbox-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 40Ti
+  csi:
+    controllerExpandSecretRef:
+      name: rook-csi-cephfs-provisioner
+      namespace: rook-ceph
+    driver: rook-ceph.cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      name: rook-csi-cephfs-node
+      namespace: rook-ceph
+    volumeAttributes:
+      clusterID: rook-ceph
+      fsName: seedbox
+      pool: seedbox-data0
+      storage.kubernetes.io/csiProvisionerIdentity: 1722896863076-5863-rook-ceph.cephfs.csi.ceph.com
+      subvolumeName: csi-vol-eae75138-e948-4679-81bb-8dc90cdc3a30
+      subvolumePath: /volumes/csi/csi-vol-eae75138-e948-4679-81bb-8dc90cdc3a30/53b6d1df-9146-4e52-b904-950d6d101ebd
+    volumeHandle: 0001-0009-rook-ceph-0000000000000009-eae75138-e948-4679-81bb-8dc90cdc3a30
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: seedbox-sc
+  volumeMode: Filesystem

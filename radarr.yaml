@@ -16,11 +16,11 @@ spec:
       labels:
         app: radarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex
+        backup.velero.io/backup-volumes-excludes: plex,seedbox 
     spec:
       containers:
       - name: radarr
-        image: lscr.io/linuxserver/radarr:nightly-5.8.3.8932-ls42
+        image: lscr.io/linuxserver/radarr:latest
         ports:
         - containerPort: 7878
           name: http-web-svc
@@ -34,12 +34,17 @@ spec:
         volumeMounts:
         - mountPath: "/plex"
           name: plex
+        - mountPath: "/seedbox"
+          name: seedbox
         - mountPath: "/config"
           name: config
       volumes:
       - name: plex
         persistentVolumeClaim:
           claimName: plex-pvc
+      - name: seedbox
+        persistentVolumeClaim:
+          claimName: seedbox-pvc
       - name: config
         persistentVolumeClaim:
           claimName: radarr-pvc

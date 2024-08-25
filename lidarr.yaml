@@ -16,11 +16,11 @@ spec:
       labels:
         app: lidarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex
+        backup.velero.io/backup-volumes-excludes: plex,seedbox 
     spec:
       containers:
       - name: lidarr
-        image: lscr.io/linuxserver/lidarr:nightly-2.5.0.4277-ls19
+        image: lscr.io/linuxserver/lidarr:latest
         ports:
         - containerPort: 8686
           name: http-web-svc
@@ -34,12 +34,17 @@ spec:
         volumeMounts:
         - mountPath: "/plex"
           name: plex
+        - mountPath: "/seedbox"
+          name: seedbox
         - mountPath: "/config"
           name: config
       volumes:
       - name: plex
         persistentVolumeClaim:
           claimName: plex-pvc
+      - name: seedbox
+        persistentVolumeClaim:
+          claimName: seedbox-pvc
       - name: config
         persistentVolumeClaim:
           claimName: lidarr-pvc

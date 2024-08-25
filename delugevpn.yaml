@@ -2,83 +2,76 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sonarr
+  name: delugevpn
   namespace: plex
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: sonarr
+      app: delugevpn
   replicas: 1
   template:
     metadata:
       labels:
-        app: sonarr
+        app: delugevpn
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex,seedbox 
+        backup.velero.io/backup-volumes-excludes: seedbox
     spec:
       containers:
-      - name: sonarr
-        image: lscr.io/linuxserver/sonarr:latest
+      - name: delugevpn
+        image: binhex/arch-delugevpn:2.1.1-6-05
         ports:
-        - containerPort: 8989
+        - containerPort: 8112
           name: http-web-svc
-        env:
-        - name: TZ
-          value: America/New_York
-        - name: PUID
-          value: "1000"
-        - name: PGID
-          value: "1000"
+        securityContext:
+          privileged: true
+        envFrom:
+        - secretRef:
+            name: delugevpn-secret
         volumeMounts:
-        - mountPath: "/plex"
-          name: plex
-        - mountPath: "/seedbox"
+        - mountPath: "/data"
           name: seedbox
         - mountPath: "/config"
           name: config
       volumes:
-      - name: plex
-        persistentVolumeClaim:
-          claimName: plex-pvc
       - name: seedbox
         persistentVolumeClaim:
           claimName: seedbox-pvc
       - name: config
         persistentVolumeClaim:
-          claimName: sonarr-pvc
+          claimName: delugevpn-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: sonarr-service
+  name: delugevpn-service
   namespace: plex
 spec:
   selector:
-    app: sonarr
+    app: delugevpn
   type: ClusterIP
   ports:
-  - name: sonarr-web-port
+  - name: delugevpn-web-port
     protocol: TCP
-    port: 8989
+    port: 8112
     targetPort: http-web-svc
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: sonarr
+  name: delugevpn
   namespace: plex
 spec:
   entryPoints:
   - websecure
   routes:
   - kind: Rule
-    match: Host(`sonarr.lan.jibby.org`)
+    match: Host(`delugevpn.lan.jibby.org`)
     services:
     - kind: Service
-      name: sonarr-service
-      port: 8989
+      name: delugevpn-service
+      port: 8112
     middlewares:
     - name: lanonly
       namespace: kube-system
