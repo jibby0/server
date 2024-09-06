@@ -26,6 +26,11 @@ spec:
         - name: watchlistarr-secret
           readOnly: true
           mountPath: /app/config
+        resources:
+          requests:
+            memory: '0'
+          limits:
+            memory: 500Mi
       volumes:
       - name: watchlistarr-secret
         secret:

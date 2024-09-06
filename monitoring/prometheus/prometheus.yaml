@@ -8,30 +8,34 @@ spec:
   retention: 365d
   resources:
     requests:
-      memory: 400Mi
+      memory: '0'
+    limits:
+      memory: 1Gi
   securityContext:
     fsGroup: 2000
     runAsNonRoot: true
     runAsUser: 1000
   serviceAccountName: prometheus
-  serviceMonitorSelector:
-    matchExpressions:
-    - key: name
-      operator: In
-      values:
-      - kube-state-metrics
-      - node-exporter
-      - kubelet
-      - traefik
-      - rook-ceph-mgr
-      - cloudflared
-      - shelly-plug-exporter
-  serviceMonitorNamespaceSelector:
-    matchExpressions:
-    - key: kubernetes.io/metadata.name
-      operator: In
-      values:
-      - monitoring
+  serviceMonitorSelector: {}
+  #  matchExpressions:
+  #  - key: name
+  #    operator: In
+  #    values:
+  #    - kube-state-metrics
+  #    - node-exporter
+  #    - kubelet
+  #    - traefik
+  #    - rook-ceph-mgr
+  #    - rook-ceph-exporter
+  #    - cloudflared
+  #    - shelly-plug-exporter
+  serviceMonitorNamespaceSelector: {}
+  #  matchExpressions:
+  #  - key: kubernetes.io/metadata.name
+  #    operator: In
+  #    values:
+  #    - monitoring
+  #    - rook-ceph
   storage:
     volumeClaimTemplate:
       spec:

@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: plex
-        image: linuxserver/plex:1.40.4.8679-424562606-ls224
+        image: linuxserver/plex:latest
         # for debugging
         # command: ["/bin/sh"]
         # args: ["-c", "sleep 3600"]
