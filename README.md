@@ -117,8 +117,10 @@ Create CephFilesystem
 Create SC backed by Filesystem & Pool
 Ensure the CSI subvolumegroup was created. If not, `ceph fs subvolumegroup create <fsname> csi`
 Create PVC without a specified PV: PV will be auto-created
-_Super important_: Set created PV to ReclaimPolicy: Retain
-Create a new, better-named PVC
+_Super important_: Set created PV's `persistentVolumeReclaimPolicy` to `Retain`
+Save the PV yaml, remove any extra information (see rook/data/data-static-pv.yaml for an example of what's required). Give it a more descriptive name.
+Delete the PVC, and PV.
+Apply your new PV YAML. Create a new PVC, pointing at this new PV.
 
 ### Resizing a CephFS PVC
 Grow resources->storage on PV
@@ -296,8 +298,7 @@ My backups target is a machine running
 - k3s
 - minio
 - velero
-
-Important services are backed up with velero to the remote minio instance. These backups are restored to the remote k3s instance to ensure functionality.
+Important services are backed up with velero to the remote minio instance. These backups can be restored to the remote k3s instance to ensure functionality, or function as a secondary service instance.
 
 ## installing velero
 ```
@@ -332,35 +333,3 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install openebs --namespace openebs op
 
 This is a nice PVC option for simpler backup target setups.
 
-
-# [WIP] Still to do
-
-- real failover
-  - https://metallb.universe.tf/concepts/layer2/
-- bittorrent + VPN
-- gogs ssh ingress?
-  - can't go through cloudflare without cloudflared on the client
-  - cloudflared running in the gogs pod?
-  - do gitea or gitlab have better options?
-- Bonded interface for n5105s
-- more reproducable node setup
-  - newer kernel too
-- more reproducable kubernetes setup (? too much work)
-  - https://elemental.docs.rancher.com/quickstart-cli/
-- authelia for internal services
-  - maybe once the helm chart is a little smoother
-  - can it allow tidbyt access?
-
-# [WIP] What's important on each node?
-
-- /var/lib/rook
-- /var/lib/rancher
-- /run/k3s
-- /var/lib/kubelet/pods
-- /etc/rancher/k3s/
-
-- /etc/sysctl.d/98-openfiles.conf
-   fs.inotify.max_user_instances = 1024
-   fs.inotify.max_user_watches = 1048576
-- non-free: https://wiki.debian.org/SourcesList#Example_sources.list
-  apt install firmware-misc-nonfree
