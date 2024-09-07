@@ -1,5 +1,4 @@
 # TODO move to the main helm values
-# TODO deviceClass: hdd
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
@@ -9,9 +8,11 @@ spec:
   metadataPool:
     replicated:
       size: 3
+    deviceClass: ssd
   dataPools:
     - replicated:
         size: 3
+      deviceClass: hdd
   metadataServer:
     activeCount: 1
     activeStandby: true

@@ -8,10 +8,14 @@ spec:
   metadataPool:
     replicated:
       size: 3
+    deviceClass: ssd
   dataPools:
     - replicated:
         size: 2
       deviceClass: hdd
+      parameters:
+        # had constant 50% misplaced objects when size=2, min_size=1
+        min_size: "2"
   metadataServer:
     activeCount: 1
     activeStandby: true

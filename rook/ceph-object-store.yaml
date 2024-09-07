@@ -5,21 +5,23 @@ metadata:
   namespace: rook-ceph
 spec:
   metadataPool:
-    failureDomain: host
     replicated:
       size: 3
-  dataPool:
+    deviceClass: ssd
     failureDomain: host
+  dataPool:
     erasureCoded:
       dataChunks: 2
       codingChunks: 1
+    deviceClass: hdd
+    failureDomain: host
   preservePoolsOnDelete: true
   gateway:
     sslCertificateRef:
     port: 6980
     # securePort: 443
     instances: 1
-  healthCheck:
-    bucket:
-      disabled: false
-      interval: 60s
+  #healthCheck:
+  #  bucket:
+  #    disabled: false
+  #    interval: 60s
