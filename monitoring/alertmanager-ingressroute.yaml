@@ -1,0 +1,20 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: alertmanager-operated
+  namespace: monitoring
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`alertmanager.lan.jibby.org`)
+    services:
+    - kind: Service
+      name: alertmanager-operated
+      port: 9093
+    middlewares:
+    - name: lanonly
+      namespace: kube-system
+

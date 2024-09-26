@@ -8,17 +8,20 @@ spec:
   metadataPool:
     replicated:
       size: 3
-      deviceClass: ssd
+    deviceClass: ssd
+    failureDomain: host
   dataPools:
     - name: default
       replicated:
         size: 3
       deviceClass: hdd
+      failureDomain: host
     - name: erasurecoded
       erasureCoded:
         dataChunks: 2
         codingChunks: 1
       deviceClass: hdd
+      failureDomain: host
   preserveFilesystemOnDelete: true
   metadataServer:
     activeCount: 1

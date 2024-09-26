@@ -64,15 +64,10 @@ data:
     ingress:
     - hostname: gogs.jibby.org
       service: http://gogs-service.gogs.svc.cluster.local:3000
-    #- hostname: matrix.jibby.org
-    #  service: http://matrix-service.matrix.svc.cluster.local:8008
     - hostname: miniflux.jibby.org
       service: http://miniflux-service.miniflux.svc.cluster.local:8080
-    - hostname: vaultwarden.jibby.org
-      service: http://vaultwarden-service.vaultwarden.svc.cluster.local:80
-    - hostname: vaultwarden.jibby.org
-      path: /notifications/hub.*
-      service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
+    - hostname: ntfy-alertmanager.jibby.org
+      service: http://ntfy-alertmanager.monitoring.svc.cluster.local:80
     - hostname: homeassistant.jibby.org
       service: http://homeassistant-service.homeassistant.svc.cluster.local:8123
     - hostname: ntfy.jibby.org
@@ -81,4 +76,11 @@ data:
     #   service: http://mastodon-service.mastodon.svc.cluster.local:3000
     # - hostname: streaming-mastodon.jibby.org
     #   service: http://mastodon-service.mastodon.svc.cluster.local:4000
+    #- hostname: vaultwarden.jibby.org
+    #  service: http://vaultwarden-service.vaultwarden.svc.cluster.local:80
+    #- hostname: vaultwarden.jibby.org
+    #  path: /notifications/hub.*
+    #  service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
+    #- hostname: matrix.jibby.org
+    #  service: http://matrix-service.matrix.svc.cluster.local:8008
     - service: http_status:404

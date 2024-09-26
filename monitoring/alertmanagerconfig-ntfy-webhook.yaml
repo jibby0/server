@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanagerconfig-ntfy-webhook
+  namespace: monitoring
+  labels:
+    alertmanagerConfig: ntfy-webhook
+spec:
+  route:
+    groupBy: ['job']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: 'ntfy'
+  receivers:
+  - name: 'ntfy'
+    webhookConfigs:
+    - url: 'http://ntfy-alertmanager.monitoring.svc.cluster.local/'
+      httpConfig:
+        basicAuth:
+          username:
+            name: ntfy-alertmanager-user
+            key: name
+          password:
+            name: ntfy-alertmanager-user
+            key: password

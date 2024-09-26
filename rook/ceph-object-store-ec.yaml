@@ -1,7 +1,7 @@
 apiVersion: ceph.rook.io/v1
 kind: CephObjectStore
 metadata:
-  name: ceph-objectstore
+  name: ceph-objectstore-ec
   namespace: rook-ceph
 spec:
   metadataPool:
@@ -18,7 +18,7 @@ spec:
   preservePoolsOnDelete: true
   gateway:
     sslCertificateRef:
-    port: 6980
+    port: 6981
     # securePort: 443
     instances: 1
   #healthCheck:

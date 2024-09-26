@@ -15,8 +15,18 @@ spec:
     fsGroup: 2000
     runAsNonRoot: true
     runAsUser: 1000
+  alerting:
+    alertmanagers:
+      - namespace: monitoring
+        name: alertmanager-operated
+        port: web
   serviceAccountName: prometheus
   serviceMonitorSelector: {}
+  serviceMonitorNamespaceSelector: {}
+  ruleSelector: # {} # does this pick up nothing if nil?
+    matchLabels:
+      role: alert-rules
+  ruleNamespaceSelector: {}
   #  matchExpressions:
   #  - key: name
   #    operator: In
@@ -29,7 +39,6 @@ spec:
   #    - rook-ceph-exporter
   #    - cloudflared
   #    - shelly-plug-exporter
-  serviceMonitorNamespaceSelector: {}
   #  matchExpressions:
   #  - key: kubernetes.io/metadata.name
   #    operator: In

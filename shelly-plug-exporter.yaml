@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: shelly-plug-exporter
-        image: jibby0/shelly-plug-exporter:24.2.0-fork2
+        image: webdevops/shelly-plug-exporter:24.9.0
         ports:
         - containerPort: 8080
           name: metrics

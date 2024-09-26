@@ -1,0 +1,9 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  replicas: 1
+  alertmanagerConfiguration:
+    name: alertmanagerconfig-ntfy-webhook

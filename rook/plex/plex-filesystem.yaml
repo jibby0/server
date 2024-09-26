@@ -8,7 +8,7 @@ spec:
   metadataPool:
     replicated:
       size: 3
-      deviceClass: ssd
+    deviceClass: ssd
   dataPools:
     - name: default
       replicated:

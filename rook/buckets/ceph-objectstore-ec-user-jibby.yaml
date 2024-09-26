@@ -1,11 +1,11 @@
 apiVersion: ceph.rook.io/v1
 kind: CephObjectStoreUser
 metadata:
-  name: josh
+  name: jibby
   namespace: rook-ceph
 spec:
-  store: ceph-objectstore
-  displayName: Josh
+  store: ceph-objectstore-ec
+  displayName: jibby
   quotas:
     maxBuckets: 1
     maxSize: 10G

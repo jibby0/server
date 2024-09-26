@@ -11,5 +11,5 @@ spec:
     match: Host(`s3.jibby.org`)
     services:
     - kind: Service
-      name: rook-ceph-rgw-ceph-objectstore
-      port: 6980
+      name: rook-ceph-rgw-ceph-objectstore-ec
+      port: 6981

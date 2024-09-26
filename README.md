@@ -249,7 +249,9 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin ... --set-file config.map.confi
 
 # ceph client for cephfs volumes
 
-## New method
+## Kernel driver
+
+### New method
 
 https://docs.ceph.com/en/latest/man/8/mount.ceph/
 
@@ -257,13 +259,34 @@ https://docs.ceph.com/en/latest/man/8/mount.ceph/
 sudo mount -t ceph user@<cluster FSID>.<filesystem name>=/ /mnt/ceph -o secret=<secret key>,x-systemd.requires=ceph.target,x-systemd.mount-timeout=5min,_netdev,mon_addr=192.168.1.1
 ```
 
-## Older method (stopped working for me around Pacific)
+### Older method (stopped working for me around Pacific)
 
 ```
 sudo vi /etc/fstab
 
 192.168.1.1,192.168.1.2:/    /ceph   ceph    name=admin,secret=<secret key>,x-systemd.mount-timeout=5min,_netdev,mds_namespace=data
 ```
+
+## FUSE
+
+```
+$ cat /etc/ceph/ceph.conf                                                                                                                                
+[global]
+        fsid = <my cluster uuid>
+        mon_host = [v2:192.168.1.1:3300/0,v1:192.168.1.1:6789/0] [v2:192.168.1.2:3300/0,v1:192.168.1.2:6789/0]
+$ cat /etc/ceph/ceph.client.admin.keyring                                                                                                                
+[client.admin]                                                                
+        key = <my key>
+        caps mds = "allow *"          
+        caps mgr = "allow *"          
+        caps mon = "allow *"                                                  
+        caps osd = "allow *"
+
+sudo vi /etc/fstab
+
+none /ceph fuse.ceph ceph.id=admin,ceph.client_fs=data,x-systemd.requires=ceph.target,x-systemd.mount-timeout=5min,_netdev 0 0
+```
+
 
 # disable mitigations
 https://unix.stackexchange.com/questions/554908/disable-spectre-and-meltdown-mitigations

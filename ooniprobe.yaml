@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: ooniprobe
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ooniprobe
+  namespace: ooniprobe
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ooniprobe
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ooniprobe
+      annotations:
+        backup.velero.io/backup-volumes-excludes: ooniprobe
+    spec:
+      containers:
+      - name: ooniprobe
+        image: aaimio/ooniprobe:latest
+        env:
+        - name: informed_consent
+          value: "true"
+        - name: upload_results
+          value: "true"
+        - name: sleep
+          value: "true"
+        volumeMounts:
+        - mountPath: "/config"
+          name: ooniprobe
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "300Mi"
+      volumes:
+      - name: ooniprobe
+        persistentVolumeClaim:
+          claimName: ooniprobe-pvc

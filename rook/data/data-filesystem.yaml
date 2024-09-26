@@ -1,4 +1,5 @@
 # TODO move to the main helm values
+# TODO isn't written much, could probably be EC
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:

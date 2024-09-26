@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy-alertmanager
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: ntfy-alertmanager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ntfy-alertmanager
+    spec:
+      containers:
+      - name: ntfy-alertmanager
+        image: xenrox/ntfy-alertmanager:latest
+        args: ["--config", "/config/config.yaml"]
+        ports:
+        - containerPort: 8080
+          name: http-web-svc
+        volumeMounts:
+          - mountPath: "/config"
+            name: "config"
+      volumes:
+        - name: config
+          secret:
+            secretName: ntfy-alertmanager-config-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-alertmanager
+  namespace: monitoring
+spec:
+  selector:
+    app: ntfy-alertmanager
+  type: ClusterIP
+  ports:
+  - name: ntfy-alertmanager-port
+    protocol: TCP
+    port: 80
+    targetPort: http-web-svc
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ntfy-alertmanager
+  namespace: monitoring
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`ntfy-alertmanager.jibby.org`)
+    services:
+    - kind: Service
+      name: ntfy-alertmanager
+      port: 80
+
