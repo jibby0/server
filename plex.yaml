@@ -26,6 +26,7 @@ spec:
       containers:
       - name: plex
         image: linuxserver/plex:latest
+        imagePullPolicy: Always
         # for debugging
         # command: ["/bin/sh"]
         # args: ["-c", "sleep 3600"]

@@ -32,10 +32,6 @@ spec:
       #- "--log.level=DEBUG"
       #- "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
 
-    ports:
-      metrics:
-        expose: true
-        exposedPort: 9101
     volumes:
       - name: traefik-config
         mountPath: "/config"
@@ -57,7 +53,11 @@ spec:
 
     persistence:
       enabled: true
-      storageClass: ceph-block
+      storageClass: ceph-block-ssd
+
+    metrics:
+      prometheus:
+        addServicesLabels: true
 
     # Fix for acme.json file being changed to 660 from 600
     # This can manifest as the incredibly unhelpful "the router <router name> uses a non-existent resolver: <resolver name>"

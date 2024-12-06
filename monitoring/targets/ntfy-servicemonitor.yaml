@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: ntfy
+    name: ntfy
+  name: ntfy
+  namespace: monitoring
+spec:
+  endpoints:
+  - port: http
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - ntfy
+  selector:
+    matchLabels:
+      app: ntfy
+

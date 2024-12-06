@@ -7,7 +7,7 @@ metadata:
   labels:
     app: plex
 spec:
-  storageClassName: ceph-block
+  storageClassName: ceph-block-ssd
   accessModes:
     - ReadWriteOnce
   resources:

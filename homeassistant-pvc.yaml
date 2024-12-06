@@ -11,54 +11,9 @@ metadata:
   labels:
     app: homeassistant
 spec:
-  storageClassName: ceph-block
+  storageClassName: ceph-block-ssd
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: whisper-pvc
-  namespace: homeassistant
-  labels:
-    app: whisper
-spec:
-  storageClassName: ceph-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: piper-pvc
-  namespace: homeassistant
-  labels:
-    app: piper
-spec:
-  storageClassName: ceph-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: openwakeword-pvc
-  namespace: homeassistant
-  labels:
-    app: openwakeword
-spec:
-  storageClassName: ceph-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
+      storage: 100Mi

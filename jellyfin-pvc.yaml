@@ -6,12 +6,12 @@ metadata:
   labels:
     app: jellyfin
 spec:
-  storageClassName: ceph-block
+  storageClassName: ceph-block-ssd
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

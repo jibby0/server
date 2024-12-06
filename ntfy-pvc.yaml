@@ -12,9 +12,9 @@ metadata:
   labels:
     app: ntfy
 spec:
-  storageClassName: ceph-block
+  storageClassName: ceph-block-ssd
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 50Mi

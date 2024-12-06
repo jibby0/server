@@ -7,3 +7,14 @@ spec:
   replicas: 1
   alertmanagerConfiguration:
     name: alertmanagerconfig-ntfy-webhook
+  storage:
+    volumeClaimTemplate:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Mi
+        storageClassName: ceph-block-ssd

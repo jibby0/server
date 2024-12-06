@@ -16,12 +16,17 @@ data:
     auth-file: "/ntfy/user.db"
     auth-default-access: "deny-all"
     behind-proxy: true
+    enable-metrics: true
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ntfy
   namespace: ntfy
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "80"
+    prometheus.io/scrape: "true"
 spec:
   strategy:
     type: Recreate
@@ -68,9 +73,12 @@ kind: Service
 metadata:
   name: ntfy-service
   namespace: ntfy
+  labels:
+    app: ntfy
 spec:
   selector:
     app: ntfy
   ports:
   - port: 80
     targetPort: 80
+    name: http
