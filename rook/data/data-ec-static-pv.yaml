@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: data-ec-static-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 20Ti
+  csi:
+    controllerExpandSecretRef:
+      name: rook-csi-cephfs-provisioner
+      namespace: rook-ceph
+    driver: rook-ceph.cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      name: rook-csi-cephfs-node
+      namespace: rook-ceph
+    volumeAttributes:
+      clusterID: rook-ceph
+      fsName: data-ec
+      pool: data-ec-erasurecoded
+      storage.kubernetes.io/csiProvisionerIdentity: 1737727666651-6570-rook-ceph.cephfs.csi.ceph.com
+      subvolumeName: csi-vol-c06598f6-39eb-47c0-a812-a3f17c59e567
+      subvolumePath: /volumes/csi/csi-vol-c06598f6-39eb-47c0-a812-a3f17c59e567/8a27a294-0884-4778-b664-c2046449c937
+    volumeHandle: 0001-0009-rook-ceph-000000000000000a-c06598f6-39eb-47c0-a812-a3f17c59e567
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: data-ec-sc
+  volumeMode: Filesystem

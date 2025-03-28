@@ -1,15 +1,20 @@
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: s3
   namespace: rook-ceph
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`s3.jibby.org`)
-    services:
-    - kind: Service
-      name: rook-ceph-rgw-ceph-objectstore-ec
-      port: 6981
+  rules:
+    - host: s3.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rook-ceph-rgw-ceph-objectstore-ec
+                port:
+                  number: 6981

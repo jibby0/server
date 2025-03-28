@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: prowlarr
-        image: lscr.io/linuxserver/prowlarr:nightly-1.21.1.4626-ls25
+        image: lscr.io/linuxserver/prowlarr:latest
         ports:
         - containerPort: 9696
           name: http-web-svc
@@ -52,21 +52,23 @@ spec:
     port: 9696
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: prowlarr
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`prowlarr.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: prowlarr-service
-      port: 9696
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: prowlarr.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prowlarr-service
+                port:
+                  number: 9696

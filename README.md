@@ -44,11 +44,18 @@ containerd really doesn't want you batch-deleting snapshots.
 
 https://github.com/k3s-io/k3s/issues/1905#issuecomment-820554037
 
+Run the below command a few times until it stops returning results:
+
+```
+sudo k3s ctr -n k8s.io i rm $(sudo k3s ctr -n k8s.io i ls -q)
+```
+
+
+This other command below has given me problems before, but may purge more images. Beware of `error unpacking image: failed to extract layer sha256:1021ef88c7974bfff89c5a0ec4fd3160daac6c48a075f74cff721f85dd104e68: failed to get reader from content store: content digest sha256:fbe1a72f5dcd08ba4ca3ce3468c742786c1f6578c1f6bb401be1c4620d6ff705: not found` (if it's not found... redownload it??)
 ```
 for sha in $(sudo k3s ctr snapshot usage | awk '{print $1}'); do sudo k3s ctr snapshot rm $sha && echo $sha; done
 ```
 
-Run this a few times until it stops returning results.
 
 ## ingress
 
@@ -157,6 +164,19 @@ conn = connect()
 conn.upload_file('path/to/s3-bucket-listing/index.html', 'public', 'index.html', ExtraArgs={'ContentType': 'text/html'})
 ```
 
+## Imbalance of PGs across OSDs
+
+https://github.com/TheJJ/ceph-balancer
+
+See the README for how this balancing strategy compares to ceph's `balancer` module. 
+
+TLDR:
+```
+$ kubectl -n rook-ceph cp placementoptimizer.py <rook-ceph-tools pod>:/tmp/
+$ kubectl -n rook-ceph exec -it deployment/rook-ceph-tools -- bash
+$ python3 /tmp/placementoptimizer.py -v balance --max-pg-moves 10 | tee /tmp/balance-upmaps
+$ bash /tmp/balance-upmaps
+```
 
 # nvidia driver (on debian)
 
@@ -313,7 +333,7 @@ An A record for `lan.jibby.org` & `*.lan.jibby.org` points to an internal IP.
 
 To be safe, a middleware is included to filter out source IPs outside of the LAN network & k3s CIDR. See `traefik/middleware-lanonly.yaml`.
 
-Then, internal services can be exposed with an IngressRoute, as a subdomain of `lan.jibby.org`. See `sonarr.yaml`'s IngressRoute.
+Then, internal services can be exposed with an Ingress, as a subdomain of `lan.jibby.org`. See `examples/nginx`'s Ingress.
 
 # Backups
 

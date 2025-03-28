@@ -44,19 +44,23 @@ spec:
     port: 80
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: ntfy-alertmanager
   namespace: monitoring
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`ntfy-alertmanager.jibby.org`)
-    services:
-    - kind: Service
-      name: ntfy-alertmanager
-      port: 80
+  rules:
+    - host: ntfy-alertmanager.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ntfy-alertmanager
+                port:
+                  number: 80
 

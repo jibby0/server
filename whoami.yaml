@@ -41,27 +41,43 @@ spec:
     port: 80
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami-lan
+  namespace: whoami
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
+spec:
+  rules:
+    - host: whoami.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami-service
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: whoami
   namespace: whoami
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`whoami.jibby.org`)
-    services:
-    - kind: Service
-      name: whoami-service
-      port: 80
-  - kind: Rule
-    match: Host(`whoami.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: whoami-service
-      port: 80
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: whoami.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami-service
+                port:
+                  number: 80

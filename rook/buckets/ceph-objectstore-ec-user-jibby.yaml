@@ -7,9 +7,9 @@ spec:
   store: ceph-objectstore-ec
   displayName: jibby
   quotas:
-    maxBuckets: 1
-    maxSize: 10G
-    maxObjects: 10000
+    maxBuckets: 2
+    maxSize: 28T
+    maxObjects: -1
   capabilities:
     user: "*"
     bucket: "*"

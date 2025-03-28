@@ -69,21 +69,24 @@ spec:
     port: 8989
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: sonarr
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`sonarr.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: sonarr-service
-      port: 8989
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: sonarr.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sonarr-service
+                port:
+                  number: 8989
+

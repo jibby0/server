@@ -27,7 +27,7 @@ spec:
       # Configuration for extra routers
       - "--providers.file.directory=/config"
 
-      - "--log.level=INFO"
+      #- "--log.level=INFO"
       # debug, uncomment for testing
       #- "--log.level=DEBUG"
       #- "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
@@ -51,6 +51,7 @@ spec:
             key: api-key
             optional: false
 
+    # TODO can this be something with ReadWriteMany?
     persistence:
       enabled: true
       storageClass: ceph-block-ssd
@@ -58,6 +59,20 @@ spec:
     metrics:
       prometheus:
         addServicesLabels: true
+    logs:
+      access:
+        enabled: true
+
+    ingressRoute:
+      dashboard:
+        enabled: false
+        #enabled: true
+        #matchRule: Host(`traefik.lan.jibby.org`)
+        # TODO auth https://doc.traefik.io/traefik/middlewares/http/basicauth/
+        #entryPoints: ["websecure"]
+        #middlewares:
+        #- name: lanonly
+        #  namespace: kube-system
 
     # Fix for acme.json file being changed to 660 from 600
     # This can manifest as the incredibly unhelpful "the router <router name> uses a non-existent resolver: <resolver name>"

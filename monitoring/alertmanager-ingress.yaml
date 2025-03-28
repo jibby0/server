@@ -2,19 +2,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: nextcloud
-  namespace: nextcloud
+  name: alertmanager-operated
+  namespace: monitoring
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
   rules:
-    - host: nextcloud.jibby.org
+    - host: alertmanager.lan.jibby.org
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: nextcloud
+                name: alertmanager-operated
                 port:
-                  number: 8080
+                  number: 9093

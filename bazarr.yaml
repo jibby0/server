@@ -59,21 +59,23 @@ spec:
     port: 6767
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: bazarr
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`bazarr.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: bazarr-service
-      port: 6767
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: bazarr.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bazarr-service
+                port:
+                  number: 6767

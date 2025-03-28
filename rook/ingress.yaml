@@ -1,19 +1,21 @@
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: rook-ceph-dashboard
   namespace: rook-ceph
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`ceph.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: rook-ceph-mgr-dashboard
-      port: 8080
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: ceph.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rook-ceph-mgr-dashboard
+                port:
+                  number: 8080

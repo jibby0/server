@@ -105,21 +105,23 @@ spec:
               claimName: media2-pvc
           restartPolicy: OnFailure
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: duplicati
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`duplicati.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: duplicati-service
-      port: 8200
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: duplicati.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: duplicati-service
+                port:
+                  number: 8200

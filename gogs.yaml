@@ -67,19 +67,3 @@ spec:
     protocol: TCP
     port: 22
     targetPort: ssh-svc
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: gogs
-  namespace: gogs
-spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`gogs.jibby.org`)
-    services:
-    - kind: Service
-      name: gogs-service
-      port: 3000

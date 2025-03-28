@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: magicmirror
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magicmirror
+  namespace: magicmirror
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: magicmirror
+  template:
+    metadata:
+      labels:
+        app: magicmirror
+    spec:
+      containers:
+      - name: magicmirror
+        image: jibby0/magicmirror-gkeepapi:v2.29.0 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: MM_SCENARIO
+          value: server
+        volumeMounts:
+        - name: config
+          mountPath: "/opt/magic_mirror/config"
+        - name: css
+          mountPath: "/opt/magic_mirror/css"
+        - name: modules
+          mountPath: "/opt/magic_mirror/modules"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: magicmirror-config-pvc
+      - name: css
+        persistentVolumeClaim:
+          claimName: magicmirror-css-pvc
+      - name: modules
+        persistentVolumeClaim:
+          claimName: magicmirror-module-pvc
+      securityContext:
+        fsGroup: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: magicmirror-service
+  namespace: magicmirror
+  labels:
+    app: magicmirror
+spec:
+  selector:
+    app: magicmirror
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: magicmirror
+  namespace: magicmirror
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
+spec:
+  rules:
+    - host: magicmirror.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: magicmirror-service
+                port:
+                  number: 8080

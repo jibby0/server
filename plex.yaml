@@ -92,7 +92,7 @@ spec:
       - name: tmpfs
         emptyDir:
           medium: Memory
-          sizeLimit: 12Gi
+          sizeLimit: 6Gi
       # Quicksync
       - name: "render-device"
         hostPath:
@@ -113,18 +113,22 @@ spec:
     port: 32400
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: plex
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`plex.jibby.org`)
-    services:
-    - kind: Service
-      name: plex-service
-      port: 32400
+  rules:
+    - host: plex.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex-service
+                port:
+                  number: 32400

@@ -34,8 +34,8 @@ spec:
           name: config
         - mountPath: "/media"
           name: media
-        #- mountPath: "/transcodes"
-        #  name: tmpfs
+        - mountPath: "/transcodes"
+          name: tmpfs
         # Quicksync
         - name: "render-device"
           mountPath: "/dev/dri/renderD128"
@@ -81,7 +81,7 @@ spec:
       - name: tmpfs
         emptyDir:
           medium: Memory
-          sizeLimit: 12Gi
+          sizeLimit: 6Gi
       # Quicksync
       - name: "render-device"
         hostPath:
@@ -102,18 +102,22 @@ spec:
     port: 8096
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: jellyfin
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`jellyfin.jibby.org`)
-    services:
-    - kind: Service
-      name: jellyfin-service
-      port: 8096
+  rules:
+    - host: jellyfin.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin-service
+                port:
+                  number: 8096

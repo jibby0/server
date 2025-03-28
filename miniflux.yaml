@@ -56,19 +56,3 @@ spec:
     protocol: TCP
     port: 8080
     targetPort: http-web-svc
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: miniflux
-  namespace: miniflux
-spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`miniflux.jibby.org`)
-    services:
-    - kind: Service
-      name: miniflux-service
-      port: 8080

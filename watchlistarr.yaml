@@ -30,7 +30,7 @@ spec:
           requests:
             memory: '0'
           limits:
-            memory: 500Mi
+            memory: 1Gi
       volumes:
       - name: watchlistarr-secret
         secret:

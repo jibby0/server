@@ -2,7 +2,7 @@
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
-  name: seedbox
+  name: data-ec
   namespace: rook-ceph
 spec:
   metadataPool:
@@ -10,11 +10,16 @@ spec:
       size: 3
     deviceClass: ssd
   dataPools:
-    - replicated:
-        size: 2
+    - name: default
+      replicated:
+        size: 3
       deviceClass: hdd
-      parameters:
-        min_size: "1"
+    - name: erasurecoded
+      erasureCoded:
+        dataChunks: 2
+        codingChunks: 1
+      deviceClass: hdd
+  preserveFilesystemOnDelete: true
   metadataServer:
     activeCount: 1
     activeStandby: true
@@ -30,3 +35,5 @@ spec:
       tolerations:
       - key: storage-node
         operator: Exists
+    priorityClassName: system-cluster-critical
+

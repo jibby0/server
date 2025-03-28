@@ -19,6 +19,8 @@ data:
           service: octoprint
           middlewares:
             - "lanonly"
+          entrypoints:
+            - "websecure"
       services:
         octoprint:
           loadBalancer:
@@ -32,6 +34,8 @@ data:
           service: pikvm
           middlewares:
             - "lanonly"
+          entrypoints:
+            - "websecure"
       services:
         pikvm:
           loadBalancer:
@@ -49,6 +53,8 @@ data:
           service: proxmox
           middlewares:
             - "lanonly"
+          entrypoints:
+            - "websecure"
       services:
         proxmox:
           loadBalancer:

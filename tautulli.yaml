@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: tautulli
-        image: linuxserver/tautulli:2.14.4
+        image: linuxserver/tautulli:latest
         ports:
         - containerPort: 8181
           name: http-web-svc
@@ -52,21 +52,23 @@ spec:
     port: 8181
     targetPort: http-web-svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: tautulli
   namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
 spec:
-  entryPoints:
-  - websecure
-  routes:
-  - kind: Rule
-    match: Host(`tautulli.lan.jibby.org`)
-    services:
-    - kind: Service
-      name: tautulli-service
-      port: 8181
-    middlewares:
-    - name: lanonly
-      namespace: kube-system
+  rules:
+    - host: tautulli.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tautulli-service
+                port:
+                  number: 8181

@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: magicmirror
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magicmirror-pvc
+  namespace: magicmirror
+  labels:
+    app: magicmirror
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magicmirror-module-pvc
+  namespace: magicmirror
+  labels:
+    app: magicmirror
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magicmirror-css-pvc
+  namespace: magicmirror
+  labels:
+    app: magicmirror
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magicmirror-config-pvc
+  namespace: magicmirror
+  labels:
+    app: magicmirror
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
