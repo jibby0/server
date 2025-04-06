@@ -168,7 +168,7 @@ conn.upload_file('path/to/s3-bucket-listing/index.html', 'public', 'index.html',
 
 https://github.com/TheJJ/ceph-balancer
 
-See the README for how this balancing strategy compares to ceph's `balancer` module. 
+See the README for how this balancing strategy compares to ceph's `balancer` module.
 
 TLDR:
 ```
@@ -290,16 +290,16 @@ sudo vi /etc/fstab
 ## FUSE
 
 ```
-$ cat /etc/ceph/ceph.conf                                                                                                                                
+$ cat /etc/ceph/ceph.conf
 [global]
         fsid = <my cluster uuid>
         mon_host = [v2:192.168.1.1:3300/0,v1:192.168.1.1:6789/0] [v2:192.168.1.2:3300/0,v1:192.168.1.2:6789/0]
-$ cat /etc/ceph/ceph.client.admin.keyring                                                                                                                
-[client.admin]                                                                
+$ cat /etc/ceph/ceph.client.admin.keyring
+[client.admin]
         key = <my key>
-        caps mds = "allow *"          
-        caps mgr = "allow *"          
-        caps mon = "allow *"                                                  
+        caps mds = "allow *"
+        caps mgr = "allow *"
+        caps mon = "allow *"
         caps osd = "allow *"
 
 sudo vi /etc/fstab
@@ -376,3 +376,27 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install openebs --namespace openebs op
 
 This is a nice PVC option for simpler backup target setups.
 
+# TODO
+
+
+- [ ] logs
+  - https://old.reddit.com/r/kubernetes/comments/y3ze83/lightweight_logging_tool_for_k3s_cluster_with/
+- [ ] explore backup over tailscale
+- [ ] explore metallb failover
+  - https://metallb.universe.tf/concepts/layer2/
+- [ ] more reproducable node setup
+  What's important on each node?
+    /var/lib/rook
+    /var/lib/rancher
+    /run/k3s
+    /var/lib/kubelet/pods
+    /etc/rancher/k3s/
+    /etc/sysctl.d/98-openfiles.conf
+      fs.inotify.max_user_instances = 1024
+      fs.inotify.max_user_watches = 1048576
+    non-free: SourcesList - Debian Wiki
+     apt install firmware-misc-nonfree
+- [ ] explore anubis https://xeiaso.net/talks/2025/surreal-joy-homelab/
+- [ ] explore bitwarden secret integration (similar to 1password integration in https://xeiaso.net/talks/2025/surreal-joy-homelab/)
+- [ ] finish this writeup 🥺👉👈
+- [ ] node affinity + eviction: how do i limit non-rook pods running on rook nodes?
