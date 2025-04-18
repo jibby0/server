@@ -10,11 +10,11 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 ```
 # First node
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.29.6+k3s2 INSTALL_K3S_EXEC="server --cluster-init" sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.32.3+k3s1 INSTALL_K3S_EXEC="server --cluster-init" sh -
 export NODE_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
 
 # Remaining nodes
-curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_VERSION=v1.29.6+k3s2 INSTALL_K3S_EXEC="server --server https://<server node ip>:6443 --kubelet-arg=allowed-unsafe-sysctls=net.ipv4.*,net.ipv6.conf.all.forwarding" sh -
+curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_VERSION=v1.32.3+k3s1 INSTALL_K3S_EXEC="server --server https://<server node ip>:6443 --kubelet-arg=allowed-unsafe-sysctls=net.ipv4.*,net.ipv6.conf.all.forwarding" sh -
 ```
 
 
@@ -400,3 +400,4 @@ This is a nice PVC option for simpler backup target setups.
 - [ ] explore bitwarden secret integration (similar to 1password integration in https://xeiaso.net/talks/2025/surreal-joy-homelab/)
 - [ ] finish this writeup 🥺👉👈
 - [ ] node affinity + eviction: how do i limit non-rook pods running on rook nodes?
+  - PreferNoSchedule taint on rook nodes

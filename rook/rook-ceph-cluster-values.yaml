@@ -249,8 +249,10 @@ cephClusterSpec:
       podAntiAffinity:
       topologySpreadConstraints:
       tolerations:
-      - key: storage-node
-        operator: Exists
+        - key: storage-node
+          operator: Equal
+          value: "true"
+          effect: PreferNoSchedule
   #   # The above placement information can also be specified for mon, osd, and mgr components
   #   mon:
   #   # Monitor deployments may contain an anti-affinity rule for avoiding monitor
@@ -576,7 +578,9 @@ cephFileSystems:
           topologySpreadConstraints:
           tolerations:
           - key: storage-node
-            operator: Exists
+            operator: Equal
+            value: "true"
+            effect: PreferNoSchedule
         priorityClassName: system-cluster-critical
     storageClass:
       enabled: true

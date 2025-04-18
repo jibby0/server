@@ -1,0 +1,174 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrentvpn
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbittorrentvpn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: qbittorrentvpn
+      annotations:
+        backup.velero.io/backup-volumes-excludes: seedbox,media,media2,data-ec
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster-ingress
+                operator: In
+                values:
+                - "true"
+      containers:
+      - name: qbittorrentvpn
+        image: binhex/arch-qbittorrentvpn:5.0.2-1-01
+        ports:
+        - containerPort: 8080
+          name: http-web-svc
+        securityContext:
+          privileged: true
+        envFrom:
+        - secretRef:
+            name: qbittorrentvpn-secret
+        volumeMounts:
+        - mountPath: "/data"
+          name: seedbox
+        - mountPath: "/media"
+          name: media
+        - mountPath: "/media2"
+          name: media2
+        - mountPath: "/dataec"
+          name: data-ec
+        - mountPath: "/config"
+          name: config
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "4Gi"
+      volumes:
+      - name: seedbox
+        persistentVolumeClaim:
+          claimName: seedbox-pvc
+      - name: media
+        persistentVolumeClaim:
+          claimName: plex-pvc
+      - name: media2
+        persistentVolumeClaim:
+          claimName: media2-pvc
+      - name: data-ec
+        persistentVolumeClaim:
+          claimName: data-ec-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: qbittorrentvpn-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrentvpn-exporter
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbittorrentvpn-exporter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: qbittorrentvpn-exporter
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster-ingress
+                operator: In
+                values:
+                - "true"
+      containers:
+      - name: qbittorrentvpn-exporter
+        image: ghcr.io/esanchezm/prometheus-qbittorrent-exporter:v1.6.0
+        ports:
+        - containerPort: 8000
+          name: metrics
+        envFrom:
+        - secretRef:
+            name: qbittorrentvpn-exporter-secret
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/sh"
+            - "-c"
+            - 'wget -O - 0.0.0.0:8000 | grep -E "qbittorrent_up\{.* 1.0"'
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrentvpn-service
+  namespace: plex
+spec:
+  selector:
+    app: qbittorrentvpn
+  type: ClusterIP
+  ports:
+  - name: qbittorrentvpn-web-port
+    protocol: TCP
+    port: 8080
+    targetPort: http-web-svc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrentvpn-exporter-service
+  namespace: plex
+  labels:
+    app: qbittorrentvpn-exporter
+spec:
+  selector:
+    app: qbittorrentvpn-exporter
+  type: ClusterIP
+  ports:
+  - name: metrics
+    protocol: TCP
+    port: 8000
+    targetPort: metrics
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qbittorrentvpn
+  namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
+spec:
+  rules:
+    - host: qbittorrentvpn.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: qbittorrentvpn-service
+                port:
+                  number: 8080

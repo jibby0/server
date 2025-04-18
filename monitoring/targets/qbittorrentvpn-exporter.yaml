@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: qbittorrentvpn-exporter
+    name: qbittorrentvpn-exporter
+  name: qbittorrentvpn-exporter
+  namespace: plex
+spec:
+  endpoints:
+  - port: metrics
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - plex
+  selector:
+    matchLabels:
+      app: qbittorrentvpn-exporter
+

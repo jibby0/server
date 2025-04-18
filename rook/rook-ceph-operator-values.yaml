@@ -407,9 +407,10 @@ csi:
 
   # -- Array of tolerations in YAML format which will be added to CSI provisioner deployment
   provisionerTolerations:
-  #    - key: key
-  #      operator: Exists
-  #      effect: NoSchedule
+    - key: storage-node
+      operator: Equal
+      value: "true"
+      effect: PreferNoSchedule
 
   # -- The node labels for affinity of the CSI provisioner deployment [^1]
   provisionerNodeAffinity: "storage-node=true" #key1=value1,value2; key2=value3
@@ -417,7 +418,11 @@ csi:
   # The CSI plugins need to be started on all the nodes where the clients need to mount the storage.
 
   # -- Array of tolerations in YAML format which will be added to CephCSI plugin DaemonSet
-  pluginTolerations: []
+  pluginTolerations:
+    - key: storage-node
+      operator: Equal
+      value: "true"
+      effect: PreferNoSchedule
 
   # -- The node labels for affinity of the CephCSI RBD plugin DaemonSet [^1]
   pluginNodeAffinity: "storage-node=true,false" # key1=value1,value2; key2=value3

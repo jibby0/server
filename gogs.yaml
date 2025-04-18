@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: gogs
-        image: gogs/gogs:0.13.0
+        image: gogs/gogs:0.13.2
         env:
         - name: SOCAT_LINK
           value: "false"
