@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
       - name: bazarr
-        image: lscr.io/linuxserver/bazarr:development-v1.4.4-beta.24-ls617
+        image: lscr.io/linuxserver/bazarr:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 6767
           name: http-web-svc

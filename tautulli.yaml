@@ -19,6 +19,7 @@ spec:
       containers:
       - name: tautulli
         image: linuxserver/tautulli:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8181
           name: http-web-svc

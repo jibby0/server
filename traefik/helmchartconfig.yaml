@@ -93,6 +93,8 @@ spec:
         volumeMounts:
           - name: data
             mountPath: /data
+      podAnnotations:
+        backup.velero.io/backup-volumes-excludes: data
 
 
     # ACME functionality is not supported when running Traefik as a DaemonSet

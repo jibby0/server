@@ -16,11 +16,12 @@ spec:
       labels:
         app: radarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex,seedbox 
+        backup.velero.io/backup-volumes-excludes: plex,seedbox,scratch
     spec:
       containers:
       - name: radarr
         image: lscr.io/linuxserver/radarr:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 7878
           name: http-web-svc
@@ -36,6 +37,8 @@ spec:
           name: plex
         - mountPath: "/seedbox"
           name: seedbox
+        - mountPath: "/scratch"
+          name: scratch
         - mountPath: "/config"
           name: config
         resources:
@@ -53,6 +56,10 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: radarr-pvc
+      - name: scratch
+        nfs:
+          server: 172.16.69.52
+          path: /data/torrents
 ---
 apiVersion: v1
 kind: Service

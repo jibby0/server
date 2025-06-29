@@ -26,6 +26,7 @@ spec:
       containers:
       - name: ooniprobe
         image: aaimio/ooniprobe:latest
+        imagePullPolicy: Always
         env:
         - name: informed_consent
           value: "true"

@@ -16,11 +16,12 @@ spec:
       labels:
         app: lidarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex,seedbox 
+        backup.velero.io/backup-volumes-excludes: plex,seedbox,scratch
     spec:
       containers:
       - name: lidarr
         image: lscr.io/linuxserver/lidarr:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8686
           name: http-web-svc
@@ -38,6 +39,8 @@ spec:
           name: seedbox
         - mountPath: "/config"
           name: config
+        - mountPath: "/scratch"
+          name: scratch
         resources:
           requests:
             memory: "0"
@@ -53,6 +56,10 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: lidarr-pvc
+      - name: scratch
+        nfs:
+          server: 172.16.69.52
+          path: /data/torrents
 ---
 apiVersion: v1
 kind: Service

@@ -16,20 +16,25 @@ spec:
       labels:
         app: qbittorrentvpn
       annotations:
-        backup.velero.io/backup-volumes-excludes: seedbox,media,media2,data-ec
+        backup.velero.io/backup-volumes-excludes: seedbox,media,media2,data-ec,scratch
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: cluster-ingress
+              - key: seedbox
                 operator: In
                 values:
                 - "true"
+      tolerations:
+      - key: seedbox
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       - name: qbittorrentvpn
-        image: binhex/arch-qbittorrentvpn:5.0.2-1-01
+        image: binhex/arch-qbittorrentvpn:5.1.0-1-01
         ports:
         - containerPort: 8080
           name: http-web-svc
@@ -49,11 +54,8 @@ spec:
           name: data-ec
         - mountPath: "/config"
           name: config
-        resources:
-          requests:
-            memory: "0"
-          limits:
-            memory: "4Gi"
+        - mountPath: "/scratch"
+          name: scratch
       volumes:
       - name: seedbox
         persistentVolumeClaim:
@@ -70,6 +72,10 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: qbittorrentvpn-pvc
+      - name: scratch
+        hostPath:
+          path: /mnt/data/torrents
+          type: Directory
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -88,15 +94,6 @@ spec:
       labels:
         app: qbittorrentvpn-exporter
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: cluster-ingress
-                operator: In
-                values:
-                - "true"
       containers:
       - name: qbittorrentvpn-exporter
         image: ghcr.io/esanchezm/prometheus-qbittorrent-exporter:v1.6.0
@@ -172,3 +169,18 @@ spec:
                 name: qbittorrentvpn-service
                 port:
                   number: 8080
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: qbittorrent
+    role: alert-rules
+  name: prometheus-qbittorrent-rules
+  namespace: plex
+spec:
+  groups:
+  - name: ./qbittorrent.rules
+    rules:
+    - alert: QbittorrentErroredTorrents
+      expr: sum(qbittorrent_torrents_count{status="error"}) > 0

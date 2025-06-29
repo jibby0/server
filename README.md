@@ -307,6 +307,10 @@ sudo vi /etc/fstab
 none /ceph fuse.ceph ceph.id=admin,ceph.client_fs=data,x-systemd.requires=ceph.target,x-systemd.mount-timeout=5min,_netdev 0 0
 ```
 
+# nfs client
+```
+192.168.1.1:/data /nfs/seedbox nfs rw,soft 0 0
+```
 
 # disable mitigations
 https://unix.stackexchange.com/questions/554908/disable-spectre-and-meltdown-mitigations
@@ -399,5 +403,6 @@ This is a nice PVC option for simpler backup target setups.
 - [ ] explore anubis https://xeiaso.net/talks/2025/surreal-joy-homelab/
 - [ ] explore bitwarden secret integration (similar to 1password integration in https://xeiaso.net/talks/2025/surreal-joy-homelab/)
 - [ ] finish this writeup 🥺👉👈
-- [ ] node affinity + eviction: how do i limit non-rook pods running on rook nodes?
+- [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
   - PreferNoSchedule taint on rook nodes
+- [ ] write up: seedbox VM & sharing the disk w/ NFS

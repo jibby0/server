@@ -5,7 +5,7 @@ metadata:
   name: lidarr-empty-folders
   namespace: plex
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "*/30 * * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   concurrencyPolicy: Forbid

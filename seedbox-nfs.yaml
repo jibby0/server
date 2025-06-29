@@ -1,0 +1,95 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: nfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-seedbox
+  namespace: nfs
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-seedbox
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nfs-seedbox
+      annotations:
+        backup.velero.io/backup-volumes-excludes: data
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: seedbox
+                operator: In
+                values:
+                - "true"
+      tolerations:
+      - key: seedbox
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      hostNetwork: true
+      containers:
+      - name: nfs
+        image: erichough/nfs-server
+        ports:
+        - containerPort: 2049
+          name: nfs
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: "/data"
+          name: data
+        - mountPath: /etc/exports
+          name: exports
+          subPath: exports
+          readOnly: true
+      volumes:
+      - name: data
+        hostPath:
+          path: /mnt/data
+          type: Directory
+      - name: exports
+        configMap:
+          name: seedbox-nfs-exports
+          items:
+          - key: exports
+            path: exports
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seedbox-nfs-exports
+  namespace: nfs
+data:
+  exports: |
+    /data 172.16.69.30 172.16.69.31 172.16.69.32 172.16.69.52 172.16.69.253 10.42.0.0/16
+
+# Testing NFS access from within a pod
+# ---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: test-pd-2
+#   namespace: nfs
+# spec:
+#   containers:
+#   - image: nginx:1.25.1
+#     name: test-container
+#     volumeMounts:
+#     - mountPath: /my-nfs-data
+#       name: test-volume
+#   volumes:
+#   - name: test-volume
+#     nfs:
+#       server: 172.16.69.52
+#       path: /data

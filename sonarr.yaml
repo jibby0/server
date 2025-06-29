@@ -16,11 +16,12 @@ spec:
       labels:
         app: sonarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex,seedbox 
+        backup.velero.io/backup-volumes-excludes: plex,seedbox,scratch
     spec:
       containers:
       - name: sonarr
         image: lscr.io/linuxserver/sonarr:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8989
           name: http-web-svc
@@ -38,6 +39,8 @@ spec:
           name: seedbox
         - mountPath: "/config"
           name: config
+        - mountPath: "/scratch"
+          name: scratch
         resources:
           requests:
             memory: "0"
@@ -53,6 +56,10 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: sonarr-pvc
+      - name: scratch
+        nfs:
+          server: 172.16.69.52
+          path: /data/torrents
 ---
 apiVersion: v1
 kind: Service

@@ -5,3 +5,4 @@ playbook.retry
 hosts
 secret-*.yaml
 credentials-*
+__pycache__

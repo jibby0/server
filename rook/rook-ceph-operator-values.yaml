@@ -423,9 +423,13 @@ csi:
       operator: Equal
       value: "true"
       effect: PreferNoSchedule
+    - key: seedbox
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
 
   # -- The node labels for affinity of the CephCSI RBD plugin DaemonSet [^1]
-  pluginNodeAffinity: "storage-node=true,false" # key1=value1,value2; key2=value3
+  pluginNodeAffinity: "" # key1=value1,value2; key2=value3
 
   # -- Enable Ceph CSI Liveness sidecar deployment
   enableLiveness: true

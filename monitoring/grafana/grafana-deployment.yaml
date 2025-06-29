@@ -18,8 +18,11 @@ spec:
         app: grafana
     spec:
       containers:
-      - env: []
+      - env:
+        - name: GF_DATABASE_WAL
+          value: "true"
         image: grafana/grafana:latest
+        imagePullPolicy: Always
         name: grafana
         ports:
         - containerPort: 3000
