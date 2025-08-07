@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: copyparty
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copyparty
+  namespace: copyparty
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: copyparty
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: copyparty
+      annotations:
+        backup.velero.io/backup-volumes-excludes: copyparty
+    spec:
+      containers:
+      - name: copyparty
+        image: copyparty/ac
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3923
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/w"
+          name: copyparty
+        - name: accounts
+          mountPath: /cfg/accounts.conf
+          subPath: accounts.conf
+        - name: config-default
+          mountPath: /cfg/default.conf
+          subPath: default.conf
+      volumes:
+      - name: copyparty
+        persistentVolumeClaim:
+          claimName: copyparty-pvc
+      - name: config-default
+        configMap:
+          name: copyparty-config
+          configMap:
+          items:
+          - key: default.conf
+            path: default.conf
+      - name: accounts
+        secret:
+          secretName: copyparty-secret-accounts
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: copyparty-config
+  namespace: copyparty
+data:
+  default.conf: |
+    [global]
+      p: 3923
+      e2dsa  # enable file indexing and filesystem scanning
+      e2ts   # and enable multimedia indexing
+      z, qr  # and zeroconf and qrcode (you can comma-separate arguments)
+      name: copyparty.jibby.org
+
+      qrs    # HTTPS QR code
+      qri: copyparty.jibby.org
+
+      xff-src: lan
+      xff-hdr: cf-connecting-ip
+
+      dav-auth
+    
+    # create volumes:
+    [/pub]
+      /w/pub 
+      accs:
+        r: *
+        A: josh
+      flags:
+        og
+        #og_ua: '(Discord|Twitter|Slack)bot' # doesn't work w/ signal
+    
+    [/priv]
+      /w/priv
+      accs:
+        A: josh
+
+    [/priv/Archive/Signal]
+      /w/priv/Archive/Signal
+      accs:
+        A: josh
+      flags:
+        lifetime: 604800  # 1wk
+        daw
+
+    [/priv/Archive/SMS]
+      /w/priv/Archive/SMS
+      accs:
+        A: josh
+      flags:
+        lifetime: 7257600  # 3mo
+        daw
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: copyparty-service
+  namespace: copyparty
+spec:
+  selector:
+    app: copyparty
+  type: ClusterIP
+  ports:
+  - name: copyparty-web-port
+    protocol: TCP
+    port: 3923
+    targetPort: http-web-svc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: copyparty
+  namespace: copyparty
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  rules:
+    - host: copyparty.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: copyparty-service
+                port:
+                  number: 3923

@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: tronbyt
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tronbyt
+  namespace: tronbyt
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tronbyt
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tronbyt
+      annotations:
+        backup.velero.io/backup-volumes-excludes: tronbyt,seedbox,scratch
+    spec:
+      containers:
+      - name: tronbyt
+        image: ghcr.io/tronbyt/server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http-web-svc
+        env:
+        - name: SERVER_HOSTNAME
+          value: tronbyt.jibby.org
+        - name: SERVER_PORT
+          value: "8000"
+        - name: PRODUCTION
+          value: "1"
+        - name: TZ
+          value: America/New_York
+        volumeMounts:
+        - mountPath: "/app/data"
+          name: data
+          subPath: data
+        - mountPath: "/app/users"
+          name: data
+          subPath: users
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: tronbyt-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tronbyt-service
+  namespace: tronbyt
+spec:
+  selector:
+    app: tronbyt
+  type: ClusterIP
+  ports:
+  - name: tronbyt-web-port
+    protocol: TCP
+    port: 8000
+    targetPort: http-web-svc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tronbyt
+  namespace: tronbyt
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  rules:
+    - host: tronbyt.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tronbyt-service
+                port:
+                  number: 8000
+

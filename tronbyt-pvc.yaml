@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tronbyt-pvc
+  namespace: tronbyt
+  labels:
+    app: tronbyt
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

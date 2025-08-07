@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsarr
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pulsarr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pulsarr
+    spec:
+      containers:
+      - name: pulsarr
+        image: lakker/pulsarr:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3003
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/app/data"
+          name: data
+        - mountPath: /app/.env
+          subPath: .env
+          name: env
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "1Gi"
+      volumes:
+      - name: env
+        configMap:
+          name: pulsarr-env
+      - name: data
+        persistentVolumeClaim:
+          claimName: pulsarr-pvc
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsarr-env
+  namespace: plex
+data:
+  .env: |
+    baseUrl=https://pulsarr.lan.jibby.org
+    port=3003
+    TZ=America/New_York
+    logLevel=info
+    NODE_ARGS=--log-both
+    cookieSecured=true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsarr-service
+  namespace: plex
+spec:
+  selector:
+    app: pulsarr
+  type: ClusterIP
+  ports:
+  - name: pulsarr-web-port
+    protocol: TCP
+    port: 3003
+    targetPort: http-web-svc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pulsarr
+  namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
+spec:
+  rules:
+    - host: pulsarr.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pulsarr-service
+                port:
+                  number: 3003

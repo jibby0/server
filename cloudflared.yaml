@@ -74,6 +74,8 @@ data:
       service: http://ntfy-service.ntfy.svc.cluster.local:80
     - hostname: paperless.jibby.org
       service: http://paperless-service.paperless.svc.cluster.local:8000
+    - hostname: tronbyt.jibby.org
+      service: http://tronbyt-service.tronbyt.svc.cluster.local:8000
     # - hostname: mastodon.jibby.org
     #   service: http://mastodon-service.mastodon.svc.cluster.local:3000
     # - hostname: streaming-mastodon.jibby.org

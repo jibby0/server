@@ -40,7 +40,7 @@ spec:
       hostNetwork: true
       containers:
       - name: nfs
-        image: erichough/nfs-server
+        image: erichough/nfs-server:2.2.1
         ports:
         - containerPort: 2049
           name: nfs
@@ -72,7 +72,7 @@ metadata:
   namespace: nfs
 data:
   exports: |
-    /data 172.16.69.30 172.16.69.31 172.16.69.32 172.16.69.52 172.16.69.253 10.42.0.0/16
+    /data 172.16.69.30(rw) 172.16.69.31(rw) 172.16.69.32(rw) 172.16.69.52(rw) 172.16.69.253(rw) 10.42.0.0/16(rw)
 
 # Testing NFS access from within a pod
 # ---
