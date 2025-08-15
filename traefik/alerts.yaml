@@ -1,0 +1,16 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: traefik
+    role: alert-rules
+  name: prometheus-traefik-rules
+  namespace: kube-system
+spec:
+  groups:
+  - name: ./traefik.rules
+    rules:
+    - alert: Traefik5xxErr
+      expr: sum by (service) (increase(traefik_service_requests_total{code=~"5..",protocol="http"}[5m])) > 0
+
