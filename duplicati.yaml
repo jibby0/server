@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: duplicati
-        image: lscr.io/linuxserver/duplicati:version-v2.0.7.1-2.0.7.1_beta_2023-05-25
+        image: lscr.io/linuxserver/duplicati:2.1.0
         ports:
         - containerPort: 8200
           name: http-web-svc
@@ -31,6 +31,11 @@ spec:
           value: "1000"
         - name: PGID
           value: "1000"
+        - name: DUPLICATI__WEBSERVICE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: duplicati-secret
+              key: password
         volumeMounts:
         - mountPath: "/plex"
           name: plex
@@ -49,7 +54,7 @@ spec:
           claimName: media2-pvc
       - name: data
         persistentVolumeClaim:
-          claimName: data-pvc
+          claimName: data-ec-pvc
       - name: config
         persistentVolumeClaim:
           claimName: duplicati-pvc

@@ -43,6 +43,9 @@ spec:
         envFrom:
         - secretRef:
             name: qbittorrentvpn-secret
+        livenessProbe:
+          exec:
+            command: ["curl", "--fail", "localhost:8080"]
         volumeMounts:
         - mountPath: "/data"
           name: seedbox
@@ -110,6 +113,7 @@ spec:
             - "-c"
             - 'wget -O - 0.0.0.0:8000 | grep -E "qbittorrent_up\{.* 1.0"'
           initialDelaySeconds: 3
+          timeoutSeconds: 5
           periodSeconds: 3
         resources:
           requests:
@@ -184,3 +188,115 @@ spec:
     rules:
     - alert: QbittorrentErroredTorrents
       expr: sum(qbittorrent_torrents_count{status="error"}) > 0
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qbittorrentvpn-restart
+  namespace: plex
+spec:
+  schedule: "*/30 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: qbittorrentvpn-restart
+        spec:
+          serviceAccountName: qbittorrentvpn-restart-serviceaccount
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          restartPolicy: OnFailure
+          containers:
+          - name: qbittorrentvpn-restart
+            image: python:3.14
+            command:
+              - python3
+              - -c
+              - |
+                import subprocess
+                import json
+                import pprint
+                import urllib.parse
+                import sys
+                import datetime
+
+                # Vars to configure
+                namespace = 'plex'
+                qparams = {'labelSelector': 'app=qbittorrentvpn'}
+                max_runtime = datetime.timedelta(days=1)
+
+                # serviceaccount/k8s specific vars. Likely don't need to edit these.
+                serviceaccount_dir = '/var/run/secrets/kubernetes.io/serviceaccount'
+                apiserver = 'https://kubernetes.default.svc'
+
+                token = open(f'{serviceaccount_dir}/token').read()
+                result = subprocess.run([
+                    'curl',
+                    '--cacert', f'{serviceaccount_dir}/ca.crt',
+                    '--header', f'Authorization: Bearer {token}',
+                    '-X', 'GET',
+                    f'{apiserver}/api/v1/namespaces/{namespace}/pods?{urllib.parse.urlencode(qparams)}'
+                  ],
+                  capture_output=True,
+                  check=True,
+                )
+
+                pod_list = json.loads(result.stdout)
+                items = pod_list.get('items')
+                if items is None or len(items) < 1:
+                    print(f'No pod found? Exiting. {pod_list=}')
+                    sys.exit(1)
+                if len(items) > 1:
+                    print(f'>1 pod? Exiting. {items=}, {len(items)=}')
+                    sys.exit(1)
+
+                pod = items[0]
+                container_statuses = pod['status']['containerStatuses']
+                if len(container_statuses) != 1:
+                    print(f'len(containerStatuses) != 1? Exiting. {container_statuses=}')
+                    sys.exit(1)
+                running = container_statuses[0]['state'].get('running')
+                if not running:
+                    print(f'Pod not running? Exiting. {container_statuses["state"]=}')
+
+                started_at = datetime.datetime.fromisoformat(running["startedAt"])
+                runtime = datetime.datetime.now(tz=datetime.UTC) - started_at
+                print(f'{runtime=} > {max_runtime=} ? {runtime > max_runtime}')
+                if runtime > max_runtime:
+                    pod_name = pod['metadata']['name']
+                    print(f'Deleting pod {pod_name}')
+                    result = subprocess.run([
+                        'curl',
+                        '--cacert', f'{serviceaccount_dir}/ca.crt',
+                        '--header', f'Authorization: Bearer {token}',
+                        '-X', 'DELETE',
+                        f'{apiserver}/api/v1/namespaces/{namespace}/pods/{pod_name}'
+                      ],
+                      capture_output=True,
+                      check=True,
+                    )
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: qbittorrentvpn-restart-serviceaccount
+  namespace: plex
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: qbittorrentvpn-restart-serviceaccount-edit
+  namespace: plex
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: qbittorrentvpn-restart-serviceaccount
+  namespace: plex

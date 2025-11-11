@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: copyparty
-        image: copyparty/ac
+        image: copyparty/ac:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3923
@@ -65,9 +65,9 @@ data:
       p: 3923
       e2dsa  # enable file indexing and filesystem scanning
       e2ts   # and enable multimedia indexing
-      z, qr  # and zeroconf and qrcode (you can comma-separate arguments)
       name: copyparty.jibby.org
 
+      qr
       qrs    # HTTPS QR code
       qri: copyparty.jibby.org
 
@@ -98,6 +98,8 @@ data:
       flags:
         lifetime: 604800  # 1wk
         daw
+        mte: +.up_at
+        nohash: .*
 
     [/priv/Archive/SMS]
       /w/priv/Archive/SMS
@@ -106,6 +108,16 @@ data:
       flags:
         lifetime: 7257600  # 3mo
         daw
+
+    [/writes]
+      /w/writes
+      accs:
+        w: *
+        A: josh
+      flags:
+        lifetime: 604800  # 1wk
+        xz: 0
+
 ---
 apiVersion: v1
 kind: Service

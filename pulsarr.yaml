@@ -34,6 +34,21 @@ spec:
             memory: "0"
           limits:
             memory: "1Gi"
+      - name: apprise
+        image: caronc/apprise:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: apprise-web-svc
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: APPRISE_STATEFUL_MODE
+          value: simple
+        - name: APPRISE_WORKER_COUNT
+          value: "1"
       volumes:
       - name: env
         configMap:
@@ -55,6 +70,7 @@ data:
     logLevel=info
     NODE_ARGS=--log-both
     cookieSecured=true
+    appriseUrl=http://localhost:8000
 ---
 apiVersion: v1
 kind: Service
