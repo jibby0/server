@@ -37,6 +37,11 @@ spec:
           name: plex
         - mountPath: "/config"
           name: config
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "512Mi"
       volumes:
       - name: plex
         persistentVolumeClaim:
