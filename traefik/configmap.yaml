@@ -60,7 +60,7 @@ data:
           loadBalancer:
             serversTransport: "proxmox"
             servers:
-              - url: https://172.16.69.40:8006
+              - url: https://172.16.69.253:8006
       serversTransports:
         proxmox:
           insecureSkipVerify: true
