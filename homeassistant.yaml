@@ -28,7 +28,7 @@ spec:
       hostNetwork: true
       containers:
       - name: homeassistant
-        image: homeassistant/home-assistant:2023.10.1
+        image: homeassistant/home-assistant:2026.1.2
         ports:
         - containerPort: 8123
           name: http-web-svc
@@ -54,6 +54,50 @@ spec:
     protocol: TCP
     port: 8123
     targetPort: http-web-svc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esphome
+  namespace: homeassistant
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: esphome
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: esphome
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster-ingress
+                operator: In
+                values:
+                - "true"
+      hostNetwork: true
+      containers:
+      - name: esphome
+        image: ghcr.io/esphome/esphome:latest
+        ports:
+        - containerPort: 6052
+          name: http-web-svc
+        volumeMounts:
+        - mountPath: "/config"
+          name: data
+        envFrom:
+        - secretRef:
+            name: esphome-secret
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: esphome-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment

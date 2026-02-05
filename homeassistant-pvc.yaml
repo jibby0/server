@@ -17,3 +17,18 @@ spec:
   resources:
     requests:
       storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esphome-pvc
+  namespace: homeassistant
+  labels:
+    app: esphome
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
