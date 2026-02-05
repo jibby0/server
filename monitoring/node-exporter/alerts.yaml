@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: node-exporter
+    role: alert-rules
+  name: prometheus-node-exporter-rules
+  namespace: monitoring
+spec:
+  groups:
+  - name: ./node-exporter.rules
+    rules:
+    - alert: OOMKill
+      expr: sum by (instance) (increase(node_vmstat_oom_kill[5m])) > 0
+
+
