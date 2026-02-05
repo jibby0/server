@@ -16,7 +16,7 @@ spec:
       labels:
         app: lidarr
       annotations:
-        backup.velero.io/backup-volumes-excludes: plex,seedbox,scratch
+        backup.velero.io/backup-volumes-excludes: plex,seedbox
     spec:
       containers:
       - name: lidarr
@@ -35,31 +35,26 @@ spec:
         volumeMounts:
         - mountPath: "/plex"
           name: plex
-        - mountPath: "/seedbox"
-          name: seedbox
         - mountPath: "/config"
           name: config
         - mountPath: "/scratch"
-          name: scratch
+          name: seedbox
         resources:
           requests:
             memory: "0"
           limits:
-            memory: "1Gi"
+            memory: "500Mi"
       volumes:
       - name: plex
         persistentVolumeClaim:
           claimName: plex-pvc
-      - name: seedbox
-        persistentVolumeClaim:
-          claimName: seedbox-pvc
       - name: config
         persistentVolumeClaim:
           claimName: lidarr-pvc
-      - name: scratch
+      - name: seedbox
         nfs:
-          server: 172.16.69.52
-          path: /data/torrents
+          server: 172.16.69.253
+          path: /seedbox/torrents
 ---
 apiVersion: v1
 kind: Service

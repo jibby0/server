@@ -27,14 +27,9 @@ spec:
                 operator: In
                 values:
                 - "true"
-      tolerations:
-      - key: seedbox
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
       containers:
       - name: qbittorrentvpn
-        image: binhex/arch-qbittorrentvpn:5.1.0-1-01
+        image: binhex/arch-qbittorrentvpn:5.1.4-1-01
         ports:
         - containerPort: 8080
           name: http-web-svc
@@ -47,8 +42,6 @@ spec:
           exec:
             command: ["curl", "--fail", "localhost:8080"]
         volumeMounts:
-        - mountPath: "/data"
-          name: seedbox
         - mountPath: "/media"
           name: media
         - mountPath: "/media2"
@@ -58,11 +51,13 @@ spec:
         - mountPath: "/config"
           name: config
         - mountPath: "/scratch"
-          name: scratch
+          name: seedbox
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "4.5Gi"
       volumes:
-      - name: seedbox
-        persistentVolumeClaim:
-          claimName: seedbox-pvc
       - name: media
         persistentVolumeClaim:
           claimName: plex-pvc
@@ -75,9 +70,9 @@ spec:
       - name: config
         persistentVolumeClaim:
           claimName: qbittorrentvpn-pvc
-      - name: scratch
+      - name: seedbox
         hostPath:
-          path: /mnt/data/torrents
+          path: /seedbox/torrents
           type: Directory
 ---
 apiVersion: apps/v1
@@ -99,7 +94,7 @@ spec:
     spec:
       containers:
       - name: qbittorrentvpn-exporter
-        image: ghcr.io/esanchezm/prometheus-qbittorrent-exporter:v1.6.0
+        image: ghcr.io/esanchezm/prometheus-qbittorrent-exporter:latest
         ports:
         - containerPort: 8000
           name: metrics
@@ -228,7 +223,7 @@ spec:
                 # Vars to configure
                 namespace = 'plex'
                 qparams = {'labelSelector': 'app=qbittorrentvpn'}
-                max_runtime = datetime.timedelta(days=1)
+                max_runtime = datetime.timedelta(days=3)
 
                 # serviceaccount/k8s specific vars. Likely don't need to edit these.
                 serviceaccount_dir = '/var/run/secrets/kubernetes.io/serviceaccount'
