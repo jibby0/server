@@ -5,12 +5,12 @@ metadata:
   namespace: monitoring
 spec:
   replicas: 1
-  retention: 30d
+  retention: 60d
   resources:
     requests:
       memory: '0'
     limits:
-      memory: 1Gi
+      memory: 1.5Gi
   securityContext:
     fsGroup: 2000
     runAsNonRoot: true
