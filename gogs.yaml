@@ -23,14 +23,21 @@ spec:
     spec:
       containers:
       - name: gogs
-        image: gogs/gogs:0.13.2
+        ## Gogs container with `ssh` added. This ssh isn't servicing git operations, only used in hooks to mirror repos.
+        ## TODO make a real Dockerfile out of this
+        #
+        # FROM gogs/gogs:next-0.14.1
+        # USER root
+        # RUN apk --no-cache --no-progress --logfile=no add openssh
+        # USER git:git
+        image: jibby0/gogs-next-ssh:0.14.1
         env:
         - name: SOCAT_LINK
           value: "false"
           name: DISABLE_REGISTRATION
           value: "true"
         ports:
-        - containerPort: 22
+        - containerPort: 2222
           name: ssh-svc
         - containerPort: 3000
           name: http-web-svc
@@ -44,6 +51,19 @@ spec:
           failureThreshold: 10
           initialDelaySeconds: 30
           periodSeconds: 10
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       volumes:
       - name: data
         persistentVolumeClaim:
@@ -65,5 +85,19 @@ spec:
     targetPort: http-web-svc
   - name: gogs-ssh-port
     protocol: TCP
-    port: 22
+    port: 2222
     targetPort: ssh-svc
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: gogs-ssh
+  namespace: gogs
+spec:
+  entryPoints:
+    - gogsssh
+  routes:
+    - match: HostSNI(`*`)
+      services:
+      - name: gogs-service
+        port: 2222
