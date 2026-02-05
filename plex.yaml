@@ -21,7 +21,7 @@ spec:
       labels:
         app: plex
       annotations:
-        backup.velero.io/backup-volumes-excludes: media,media-metadata,tmpfs
+        backup.velero.io/backup-volumes-excludes: media,media-metadata,transcodes
     spec:
       containers:
       - name: plex
@@ -41,21 +41,18 @@ spec:
         - mountPath: "/media"
           name: media
         - mountPath: "/transcodes"
-          name: tmpfs
+          name: transcodes
         # Quicksync
         - name: "render-device"
           mountPath: "/dev/dri/renderD128"
+        # Quicksync
+        securityContext:
+            privileged: true
         env:
         - name: PUID
           value: "1000"
         - name: PGID
           value: "1000"
-        ## NVIDIA
-        #- name: NVIDIA_DRIVER_CAPABILITIES
-        #  value: "all"
-        # Quicksync
-        securityContext:
-            privileged: true
         livenessProbe:
           httpGet:
             path: /web/index.html
@@ -64,10 +61,9 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 30
           timeoutSeconds: 10
-        ## NVIDIA
-        #resources:
-        #  limits:
-        #    nvidia.com/gpu: 1
+        resources:
+          limits:
+            ephemeral-storage: "10Gi"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -77,7 +73,6 @@ spec:
                 operator: In
                 values:
                 - "true"
-
       volumes:
       - name: config
         persistentVolumeClaim:
@@ -89,10 +84,8 @@ spec:
         persistentVolumeClaim:
           claimName: plex-pvc
           readOnly: true
-      - name: tmpfs
-        emptyDir:
-          medium: Memory
-          sizeLimit: 6Gi
+      - name: transcodes
+        emptyDir: {}
       # Quicksync
       - name: "render-device"
         hostPath:

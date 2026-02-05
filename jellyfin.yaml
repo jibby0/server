@@ -21,12 +21,11 @@ spec:
       labels:
         app: jellyfin
       annotations:
-        backup.velero.io/backup-volumes-excludes: media,tmpfs
+        backup.velero.io/backup-volumes-excludes: media,transcodes
     spec:
       containers:
       - name: jellyfin
-        #image: jellyfin/jellyfin:latest
-        image: dfrgu/jellyfin-jemalloc:latest
+        image: jellyfin/jellyfin:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8096
@@ -37,7 +36,7 @@ spec:
         - mountPath: "/media"
           name: media
         - mountPath: "/transcodes"
-          name: tmpfs
+          name: transcodes
         # Quicksync
         - name: "render-device"
           mountPath: "/dev/dri/renderD128"
@@ -46,11 +45,6 @@ spec:
           value: "1000"
         - name: PGID
           value: "1000"
-        - name: "MALLOC_TRIM_THRESHOLD_"
-          value: "131072"
-        ## NVIDIA
-        #- name: NVIDIA_DRIVER_CAPABILITIES
-        #  value: "all"
         # Quicksync
         securityContext:
             privileged: true
@@ -62,15 +56,13 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 30
           timeoutSeconds: 10
-        ## NVIDIA
-        #resources:
-        #  limits:
-        #    nvidia.com/gpu: 1
         resources:
           requests:
             memory: "0"
           limits:
-            memory: "4Gi"
+            memory: "1.5Gi"
+          limits:
+            ephemeral-storage: "1Gi"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -87,10 +79,8 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: media2-pvc
-      - name: tmpfs
-        emptyDir:
-          medium: Memory
-          sizeLimit: 2Gi
+      - name: transcodes
+        emptyDir: {}
       # Quicksync
       - name: "render-device"
         hostPath:
