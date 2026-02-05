@@ -39,6 +39,11 @@ spec:
         - name: config-default
           mountPath: /cfg/default.conf
           subPath: default.conf
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "1Gi"
       volumes:
       - name: copyparty
         persistentVolumeClaim:
@@ -72,9 +77,10 @@ data:
       qri: copyparty.jibby.org
 
       xff-src: lan
-      xff-hdr: cf-connecting-ip
+      rproxy: -1
 
       dav-auth
+      usernames
     
     # create volumes:
     [/pub]
@@ -96,9 +102,9 @@ data:
       accs:
         A: josh
       flags:
+        e2ds
         lifetime: 604800  # 1wk
         daw
-        mte: +.up_at
         nohash: .*
 
     [/priv/Archive/SMS]
