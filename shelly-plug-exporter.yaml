@@ -22,13 +22,17 @@ spec:
     spec:
       containers:
       - name: shelly-plug-exporter
-        image: webdevops/shelly-plug-exporter:24.9.0
+        image: webdevops/shelly-plug-exporter:latest
         ports:
         - containerPort: 8080
           name: metrics
         env:
         - name: SHELLY_HOST_SHELLYPLUSES
           value: 172.16.69.80,172.16.69.81,172.16.69.82,172.16.69.83,172.16.69.84
+        - name: SHELLY_REQUEST_RETRY_COUNT
+          value: "2"
+        - name: SHELLY_REQUEST_RETRY_WAITTIMEMAX
+          value: 100ms
         - name: SHELLY_AUTH_USERNAME
           value: admin
         - name: SHELLY_AUTH_PASSWORD
@@ -37,10 +41,8 @@ spec:
               name: shelly-plug-exporter
               key: password
               optional: false
-        - name: LOG_DEBUG
-          value: "1"
-        - name: LOG_JSON
-          value: "0"
+        - name: LOG_LEVEL
+          value: "trace"
 ---
 apiVersion: v1
 kind: Service
