@@ -10,17 +10,24 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 ```
 # First node
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.32.3+k3s1 INSTALL_K3S_EXEC="server --cluster-init" sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.34.3+k3s1 INSTALL_K3S_EXEC="server --cluster-init" sh -
 export NODE_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
 
 # Remaining nodes
-curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_VERSION=v1.32.3+k3s1 INSTALL_K3S_EXEC="server --server https://<server node ip>:6443 --kubelet-arg=allowed-unsafe-sysctls=net.ipv4.*,net.ipv6.conf.all.forwarding" sh -
+curl -sfL https://get.k3s.io | K3S_TOKEN=$NODE_TOKEN INSTALL_K3S_VERSION=v1.34.3+k3s1 INSTALL_K3S_EXEC="server --server https://<server node ip>:6443 --kubelet-arg=allowed-unsafe-sysctls=net.ipv4.*,net.ipv6.conf.all.forwarding" sh -
+
+# All nodes
+# /etc/sysctl.d/01-kube.conf
+fs.inotify.max_user_watches = 524288
+fs.inotify.max_user_instances = 4096
 ```
 
 
 ## upgrading k3s
 
 https://docs.k3s.io/upgrades/automated
+
+Ensure you account for any node taints. Anecdotal, but I had one node fail to run upgrade pods due to a taint, & it appeared upgrades were postponed across the entire cluster.
 
 ## purging k3s image cache
 
@@ -63,9 +70,7 @@ Uses traefik, the k3s default.
 
 externalTrafficPolicy: Local is used to preserve forwarded IPs.
 
-A `cluster-ingress=true` label is given to the node my router is pointing to. Some services use a nodeAffinity to request it.
-
-For traefik, this is a harmless optimization to reduce traffic hairpinning. For pods with `hostNetwork: true`, this ensures they run on the node with the right IP.
+A `cluster-ingress=true` label is given to the node my router is pointing to. Some services use a nodeAffinity to request it. (ex: for pods with `hostNetwork: true`, this ensures they run on the node with the right IP)
 
 # rook
 
@@ -382,27 +387,19 @@ This is a nice PVC option for simpler backup target setups.
 
 # TODO
 
-
+- [ ] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
+- [ ] explore metallb failover, or cilium
+  - https://metallb.universe.tf/concepts/layer2/
+  - https://cilium.io/
+   - https://docs.cilium.io/en/latest/network/l2-announcements/
+   - https://docs.cilium.io/en/stable/installation/k3s/
+   - https://old.reddit.com/r/kubernetes/comments/11pgmsa/cilium_vs_calico_k3s_what_do_you_use_and_why/
 - [ ] logs
   - https://old.reddit.com/r/kubernetes/comments/y3ze83/lightweight_logging_tool_for_k3s_cluster_with/
 - [ ] explore backup over tailscale
-- [ ] explore metallb failover
-  - https://metallb.universe.tf/concepts/layer2/
-- [ ] more reproducable node setup
-  What's important on each node?
-    /var/lib/rook
-    /var/lib/rancher
-    /run/k3s
-    /var/lib/kubelet/pods
-    /etc/rancher/k3s/
-    /etc/sysctl.d/98-openfiles.conf
-      fs.inotify.max_user_instances = 1024
-      fs.inotify.max_user_watches = 1048576
-    non-free: SourcesList - Debian Wiki
-     apt install firmware-misc-nonfree
-- [ ] explore anubis https://xeiaso.net/talks/2025/surreal-joy-homelab/
 - [ ] explore bitwarden secret integration (similar to 1password integration in https://xeiaso.net/talks/2025/surreal-joy-homelab/)
-- [ ] finish this writeup 🥺👉👈
 - [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
   - PreferNoSchedule taint on rook nodes
-- [ ] write up: seedbox VM & sharing the disk w/ NFS
+- [ ] write up: seedbox setup & sharing the disk w/ NFS
+- [ ] finish this writeup
+- [ ] try https://kubevirt.io/
