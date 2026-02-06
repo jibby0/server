@@ -76,6 +76,10 @@ data:
       service: http://paperless-service.paperless.svc.cluster.local:8000
     - hostname: tronbyt.jibby.org
       service: http://tronbyt-service.tronbyt.svc.cluster.local:8000
+    - hostname: uptime.jibby.org
+      service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
+    - hostname: status.jibby.org
+      service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
     # - hostname: mastodon.jibby.org
     #   service: http://mastodon-service.mastodon.svc.cluster.local:3000
     # - hostname: streaming-mastodon.jibby.org
