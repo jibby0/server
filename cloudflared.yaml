@@ -80,15 +80,4 @@ data:
       service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
     - hostname: status.jibby.org
       service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
-    # - hostname: mastodon.jibby.org
-    #   service: http://mastodon-service.mastodon.svc.cluster.local:3000
-    # - hostname: streaming-mastodon.jibby.org
-    #   service: http://mastodon-service.mastodon.svc.cluster.local:4000
-    #- hostname: vaultwarden.jibby.org
-    #  service: http://vaultwarden-service.vaultwarden.svc.cluster.local:80
-    #- hostname: vaultwarden.jibby.org
-    #  path: /notifications/hub.*
-    #  service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
-    #- hostname: matrix.jibby.org
-    #  service: http://matrix-service.matrix.svc.cluster.local:8008
     - service: http_status:404
