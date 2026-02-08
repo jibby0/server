@@ -183,6 +183,8 @@ spec:
     rules:
     - alert: QbittorrentErroredTorrents
       expr: sum(qbittorrent_torrents_count{status="error"}) > 0
+
+# Restart the above deployment reguarly. Sometimes VPN throughput slows down & a restart helps.
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -295,3 +297,43 @@ subjects:
 - kind: ServiceAccount
   name: qbittorrentvpn-restart-serviceaccount
   namespace: plex
+
+# qbit_manage to auto-tag by tracker URL
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qbittorrentvpn-manage
+  namespace: plex
+spec:
+  schedule: "*/10 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: qbittorrentvpn-manage
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: qbittorrentvpn-manage
+            image: ghcr.io/stuffanthings/qbit_manage:v4.6.5
+            command:
+             - python3
+             - qbit_manage.py
+             - "--run"
+            volumeMounts:
+            - name: config
+              mountPath: /config/config.yml
+              subPath: config.yml
+          volumes:
+          - name: config
+            configMap:
+              name: qbittorrentvpn-manage-config
+              configMap:
+              items:
+              - key: config.yml
+                path: config.yml
