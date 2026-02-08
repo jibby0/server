@@ -140,6 +140,40 @@ Grow resources->storage on PVC
 
 Verify the new limit: `getfattr -n ceph.quota.max_bytes /mnt/volumes/csi/csi-vol-<uuid>/<uuid>`
 
+### Deleting a CephFS instance
+
+Removing a cephfs instance with a subvolume group requires deleting the group + all snapshots.
+
+Simply deleting the CephFileSystem CRD may result in this error appearing in operator logs:
+```
+2026-02-08 17:27:15.558449 E | ceph-file-controller: failed to reconcile CephFilesystem "rook-ceph/data" will not be deleted until all dependents are removed: filesystem subvolume groups that contain subvolumes (could be from CephFilesystem PVCs or CephNFS exports): [csi]
+```
+
+Trying to remove the subvolumegroup may indicate it has snapshots:
+
+```
+$ kubectl rook-ceph ceph fs subvolumegroup rm data csi                                                                          
+Info: running 'ceph' command with args: [fs subvolumegroup rm data csi]
+Error ENOTEMPTY: subvolume group csi contains subvolume(s) or retained snapshots of deleted subvolume(s)
+Error: . failed to run command. command terminated with exit code 39
+```
+
+```
+$ kubectl rook-ceph ceph fs subvolume ls data csi                                                                               
+Info: running 'ceph' command with args: [fs subvolume ls data csi]
+[
+    {
+        "name": "csi-vol-42675a4d-052f-11ed-8662-4a986e7745e3"
+    }
+]
+
+$ kubectl rook-ceph ceph fs subvolume rm data csi-vol-42675a4d-052f-11ed-8662-4a986e7745e3 csi                                  
+Info: running 'ceph' command with args: [fs subvolume rm data csi-vol-42675a4d-052f-11ed-8662-4a986e7745e3 csi]
+```
+
+After this, CephFileSystem deletion should proceed normally.
+
+
 ## Crush rules for each pool
 
  for i in `ceph osd pool ls`; do echo $i: `ceph osd pool get $i crush_rule`; done
@@ -183,7 +217,9 @@ $ python3 /tmp/placementoptimizer.py -v balance --max-pg-moves 10 | tee /tmp/bal
 $ bash /tmp/balance-upmaps
 ```
 
-# nvidia driver (on debian)
+# NVIDIA
+
+## nvidia driver (on debian)
 
 ```
 curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey |   sudo apt-key add -
@@ -196,7 +232,7 @@ sudo apt-key add /var/cuda-repo-debian11-11-6-local/7fa2af80.pub
 sudo apt-get update
 ```
 
-## install kernel headers
+### install kernel headers
 
 ```
 sudo apt install cuda nvidia-container-runtime nvidia-kernel-dkms
@@ -204,7 +240,7 @@ sudo apt install cuda nvidia-container-runtime nvidia-kernel-dkms
 sudo apt install --reinstall nvidia-kernel-dkms
 ```
 
-## verify dkms is actually running
+### verify dkms is actually running
 
 ```
 sudo vi /etc/modprobe.d/blacklist-nvidia-nouveau.conf
@@ -235,7 +271,6 @@ Edit the file to add a `[plugins.cri.containerd.runtimes.runc.options]` section:
 <... snip>
 ```
 
-
 & then `systemctl restart k3s`
 
 Label your GPU-capable nodes: `kubectl label nodes <node name> gpu-node=true`
@@ -248,12 +283,11 @@ helm repo update
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=0.12.2 --namespace nvidia-device-plugin --create-namespace --set-string nodeSelector.gpu-node=true
 ```
 
-
 Ensure the pods on the namespace are Running.
 
 Test GPU passthrough by applying `examples/cuda-pod.yaml`, then exec-ing into it & running `nvidia-smi`.
 
-## Share NVIDIA GPU
+### Share NVIDIA GPU
 
 https://github.com/NVIDIA/k8s-device-plugin#shared-access-to-gpus-with-cuda-time-slicing
 
@@ -295,7 +329,7 @@ sudo vi /etc/fstab
 ## FUSE
 
 ```
-$ cat /etc/ceph/ceph.conf
+# /etc/ceph/ceph.conf
 [global]
         fsid = <my cluster uuid>
         mon_host = [v2:192.168.1.1:3300/0,v1:192.168.1.1:6789/0] [v2:192.168.1.2:3300/0,v1:192.168.1.2:6789/0]
@@ -307,14 +341,13 @@ $ cat /etc/ceph/ceph.client.admin.keyring
         caps mon = "allow *"
         caps osd = "allow *"
 
-sudo vi /etc/fstab
-
+# /etc/fstab
 none /ceph fuse.ceph ceph.id=admin,ceph.client_fs=data,x-systemd.requires=ceph.target,x-systemd.mount-timeout=5min,_netdev 0 0
 ```
 
 # nfs client
 ```
-192.168.1.1:/data /nfs/seedbox nfs rw,soft 0 0
+192.168.1.1:/seedbox /nfs/seedbox nfs rw,soft 0 0
 ```
 
 # disable mitigations
