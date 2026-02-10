@@ -421,6 +421,7 @@ This is a nice PVC option for simpler backup target setups.
 # TODO
 
 - [ ] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
+  - https://github.com/dgzlopes/cdk8s-on-argocd
 - [ ] explore metallb failover, or cilium
   - https://metallb.universe.tf/concepts/layer2/
   - https://cilium.io/
@@ -434,5 +435,6 @@ This is a nice PVC option for simpler backup target setups.
 - [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
   - PreferNoSchedule taint on rook nodes
 - [ ] write up: seedbox setup & sharing the disk w/ NFS
+- [ ] update gogs write up for "next" image
 - [ ] finish this writeup
 - [ ] try https://kubevirt.io/

@@ -33,7 +33,7 @@ spec:
           requests:
             memory: "0"
           limits:
-            memory: "250Mi"
+            memory: "500Mi"
       - name: apprise
         image: caronc/apprise:latest
         imagePullPolicy: Always
