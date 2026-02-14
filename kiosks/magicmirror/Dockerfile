@@ -1,3 +1,5 @@
+# https://hub.docker.com/repository/docker/jibby0/server-magicmirror
+#
 # Add gkeepapi to support https://github.com/taxilof/MMM-GoogleKeep
 FROM karsten13/magicmirror:v2.34.0_fat
 
