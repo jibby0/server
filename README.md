@@ -4,6 +4,12 @@ _Writeup still a WIP, please pardon the dust._
 
 _Below is mostly braindumps & rough commands for creating/tweaking these services. Formal writeup coming soon!_
 
+# argocd
+
+| Status                                                                                                                 | Application |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------- |
+| [![App status](https://argocd.jibby.org/api/badge?name=magicmirror&revision=true)](https://uptime.jibby.org/dashboard) | MagicMirror |
+
 # k3s
 
 ## installing k3s
