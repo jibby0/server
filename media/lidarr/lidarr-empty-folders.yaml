@@ -24,7 +24,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: lidarr-empty-folders
-            image: jibby0/lidarr-empty-folders
+            image: jibby0/server-python3-requests:3.11-alpine
             command:
             - /bin/sh
             - -c
