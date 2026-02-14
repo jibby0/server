@@ -23,8 +23,8 @@ spec:
       containers:
       - name: magicmirror
         #image: jibby0/magicmirror-gkeepapi:v2.29.0 
-        #image: karsten13/magicmirror:v2.34.0_fat
-        image: jibby0/server-magicmirror:v2.34.0_fat
+        image: karsten13/magicmirror:v2.34.0_fat
+        #image: jibby0/server-magicmirror:v2.34.0_fat
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
