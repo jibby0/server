@@ -8,7 +8,7 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 | Status                                                                                                                 | Application |
 | ---------------------------------------------------------------------------------------------------------------------- | ----------- |
-| [![App status](https://argocd.jibby.org/api/badge?name=magicmirror&revision=true)](https://uptime.jibby.org/dashboard) | MagicMirror |
+| [![App status](https://argocd.jibby.org/api/badge?name=magicmirror&revision=true)](https://uptime.jibby.org/dashboard/5) | MagicMirror |
 
 # k3s
 
