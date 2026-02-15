@@ -9,6 +9,7 @@ spec:
       - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,172.16.69.0/24"
       - "--entrypoints.web.http.redirections.entryPoint.to=:443"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.transport.respondingTimeouts.readTimeout=0s"
 
       # Auto cert renewal via cloudflare
       - "--certificatesresolvers.letsencrypt.acme.email=joshbicking@comcast.net"
