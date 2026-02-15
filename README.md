@@ -4,9 +4,9 @@ _Writeup still a WIP, please pardon the dust._
 
 _Below is mostly braindumps & rough commands for creating/tweaking these services. Formal writeup coming soon!_
 
-# argocd
+# Services
 
-Application | Uptime (24h) | ArgoCD
+Service | Uptime (24h) | ArgoCD
 -|-|-
 MagicMirror | [![Uptime](https://status.jibby.org/api/badge/5/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=magicmirror)
 
