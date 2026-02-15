@@ -105,6 +105,7 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
           periodSeconds: 3
+          failureThreshold: 15
         resources:
           requests:
             memory: "0"
@@ -307,6 +308,7 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 60
       template:
         metadata:
           labels:
