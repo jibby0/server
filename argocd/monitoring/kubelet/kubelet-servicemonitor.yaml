@@ -46,7 +46,8 @@ spec:
       - __name__
     port: https-metrics
     relabelings:
-    - sourceLabels:
+    - action: replace
+      sourceLabels:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
@@ -64,7 +65,8 @@ spec:
     path: /metrics/cadvisor
     port: https-metrics
     relabelings:
-    - sourceLabels:
+    - action: replace
+      sourceLabels:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
@@ -76,7 +78,8 @@ spec:
     path: /metrics/probes
     port: https-metrics
     relabelings:
-    - sourceLabels:
+    - action: replace
+      sourceLabels:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
