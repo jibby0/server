@@ -1,79 +1,79 @@
-# NOTE: rpcbind on a proxmix host conflicts with this container. Not using for now.
----
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: nfs
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nfs-seedbox
-  namespace: nfs
-spec:
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: nfs-seedbox
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: nfs-seedbox
-      annotations:
-        backup.velero.io/backup-volumes-excludes: data
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: seedbox
-                operator: In
-                values:
-                - "true"
-      tolerations:
-      - key: seedbox
-        operator: Equal
-        value: "true"
-        effect: NoSchedule
-      hostNetwork: true
-      containers:
-      - name: nfs
-        image: erichough/nfs-server:2.2.1
-        ports:
-        - containerPort: 2049
-          name: nfs
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: "/data"
-          name: data
-        - mountPath: /etc/exports
-          name: exports
-          subPath: exports
-          readOnly: true
-      volumes:
-      - name: data
-        hostPath:
-          path: /seedbox
-          type: Directory
-      - name: exports
-        configMap:
-          name: seedbox-nfs-exports
-          items:
-          - key: exports
-            path: exports
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: seedbox-nfs-exports
-  namespace: nfs
-data:
-  exports: |
-    /seedbox 127.0.0.1(rw) 172.16.69.30(rw) 172.16.69.31(rw) 172.16.69.32(rw) 172.16.69.253(rw) 10.42.0.0/16(rw)
+# NOTE: rpcbind on a proxmox host conflicts with this container. Not using for now.
+#---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#    name: nfs
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: nfs-seedbox
+#  namespace: nfs
+#spec:
+#  strategy:
+#    type: Recreate
+#  selector:
+#    matchLabels:
+#      app: nfs-seedbox
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: nfs-seedbox
+#      annotations:
+#        backup.velero.io/backup-volumes-excludes: data
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#            - matchExpressions:
+#              - key: seedbox
+#                operator: In
+#                values:
+#                - "true"
+#      tolerations:
+#      - key: seedbox
+#        operator: Equal
+#        value: "true"
+#        effect: NoSchedule
+#      hostNetwork: true
+#      containers:
+#      - name: nfs
+#        image: erichough/nfs-server:2.2.1
+#        ports:
+#        - containerPort: 2049
+#          name: nfs
+#        securityContext:
+#          privileged: true
+#        volumeMounts:
+#        - mountPath: "/data"
+#          name: data
+#        - mountPath: /etc/exports
+#          name: exports
+#          subPath: exports
+#          readOnly: true
+#      volumes:
+#      - name: data
+#        hostPath:
+#          path: /seedbox
+#          type: Directory
+#      - name: exports
+#        configMap:
+#          name: seedbox-nfs-exports
+#          items:
+#          - key: exports
+#            path: exports
+#---
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: seedbox-nfs-exports
+#  namespace: nfs
+#data:
+#  exports: |
+#    /seedbox 127.0.0.1(rw) 172.16.69.30(rw) 172.16.69.31(rw) 172.16.69.32(rw) 172.16.69.253(rw) 10.42.0.0/16(rw)
 
 
 # Testing NFS access from within a pod
