@@ -1,0 +1,36 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudflared
+  namespace: argocd
+spec:
+  destination:
+    namespace: kube-system
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/cloudflared
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/argocd
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
