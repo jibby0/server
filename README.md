@@ -6,9 +6,9 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 # argocd
 
-| Status                                                                                                                 | Application |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------- |
-| [![App status](https://argocd.jibby.org/api/badge?name=magicmirror&revision=true)](https://uptime.jibby.org/dashboard/5) | MagicMirror |
+Application | Uptime (24h) | ArgoCD
+-|-|-
+MagicMirror | [![Uptime](https://status.jibby.org/api/badge/5/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=magicmirror)
 
 # k3s
 
