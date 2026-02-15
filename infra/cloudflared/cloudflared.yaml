@@ -80,4 +80,7 @@ data:
       service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
     - hostname: status.jibby.org
       service: http://uptime-kuma-service.uptime-kuma.svc.cluster.local:3001
+    - hostname: argocd.jibby.org
+      path: api/badge
+      service: http://argocd-server.argocd.svc.cluster.local:80
     - service: http_status:404
