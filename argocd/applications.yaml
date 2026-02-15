@@ -46,7 +46,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: argocd/kiosks/tronbyt
+    path: argocd/tronbyt
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
@@ -64,7 +64,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: argocd/kiosks/magicmirror
+    path: argocd/magicmirror
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
@@ -82,7 +82,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: argocd/media/plex
+    path: argocd/plex
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
@@ -100,7 +100,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: argocd/media/jellyfin
+    path: argocd/jellyfin
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
@@ -118,7 +118,210 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: argocd/media/automation
+    path: argocd/media-automation
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: argocd/infra/monitoring
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-kuma
+  namespace: argocd
+spec:
+  destination:
+    namespace: uptime-kuma
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/uptime-kuma
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: copyparty
+  namespace: argocd
+spec:
+  destination:
+    namespace: copyparty
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/copyparty
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gogs
+  namespace: argocd
+spec:
+  destination:
+    namespace: gogs
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/gogs
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homeassistant
+  namespace: argocd
+spec:
+  destination:
+    namespace: homeassistant
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/homeassistant
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  destination:
+    namespace: kube-system
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/traefik
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: upgrade-plan
+  namespace: argocd
+spec:
+  destination:
+    namespace: system-upgrade
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/upgrade-plan
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: miniflux
+  namespace: argocd
+spec:
+  destination:
+    namespace: miniflux
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/miniflux
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ntfy
+  namespace: argocd
+spec:
+  destination:
+    namespace: ntfy
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/ntfy
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ooniprobe
+  namespace: argocd
+spec:
+  destination:
+    namespace: ooniprobe
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/ooniprobe
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: syncthing
+  namespace: argocd
+spec:
+  destination:
+    namespace: syncthing
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/syncthing
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
