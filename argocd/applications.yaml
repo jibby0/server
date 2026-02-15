@@ -38,6 +38,24 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: tronbyt
+  namespace: argocd
+spec:
+  destination:
+    namespace: tronbyt
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/kiosks/tronbyt
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: magicmirror
   namespace: argocd
 spec:
@@ -47,6 +65,42 @@ spec:
   project: default
   source:
     path: argocd/kiosks/magicmirror
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: plex
+  namespace: argocd
+spec:
+  destination:
+    namespace: plex
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/media/plex
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jellyfin
+  namespace: argocd
+spec:
+  destination:
+    namespace: plex
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/media/jellyfin
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
