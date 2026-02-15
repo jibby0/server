@@ -41,7 +41,8 @@ spec:
           requests:
             memory: "0"
           limits:
-            memory: "512Mi"
+            # OOMing at 512Mi ?
+            memory: "1Gi"
       volumes:
       - name: plex
         persistentVolumeClaim:
