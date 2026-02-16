@@ -8,7 +8,17 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 
 Service | Uptime (24h) | ArgoCD
 -|-|-
-MagicMirror | [![Uptime](https://status.jibby.org/api/badge/5/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=magicmirror)
+[copyparty](copyparty.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/4/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=copyparty)
+[gogs](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/2/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=gogs)
+[plex](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/1/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=plex)
+[homeassistant](homeassistant.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/6/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=homeassistant)
+[jellyfin](jellyfin.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/7/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=jellyfin)
+[miniflux](miniflux.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/8/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=miniflux)
+[ntfy](ntfy.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/9/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=ntfy)
+
+# argocd
+
+TODO
 
 # k3s
 
