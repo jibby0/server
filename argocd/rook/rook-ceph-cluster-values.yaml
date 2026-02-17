@@ -287,17 +287,17 @@ cephClusterSpec:
     mgr:
       limits:
         cpu: 0
-        memory: "1Gi"
+        memory: "1.5Gi"
       requests:
         cpu: 0
         memory: "512Mi"
     mon:
       limits:
         cpu: 0
-        memory: "2Gi"
+        memory: "1Gi"
       requests:
         cpu: 0
-        memory: "1Gi"
+        memory: "500Mi"
     osd:
       limits:
         cpu: 0
@@ -557,13 +557,6 @@ cephFileSystems:
       metadataServer:
         activeCount: 1
         activeStandby: true
-        resources:
-          limits:
-            cpu: "500m"
-            memory: "2Gi"
-          requests:
-            cpu: "250m"
-            memory: "1Gi"
         placement:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
