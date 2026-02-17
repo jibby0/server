@@ -1,4 +1,4 @@
-# TODO move to the main helm values? or remove? or start using?
+# TODO move to the main helm values
 apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:

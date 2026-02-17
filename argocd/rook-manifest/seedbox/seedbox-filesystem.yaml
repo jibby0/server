@@ -1,4 +1,4 @@
-# TODO move to the main helm values
+# TODO redeploy this, then move to the main helm values. See if operator makes any changes during this transition
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
