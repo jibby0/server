@@ -245,9 +245,10 @@ csi:
     - name : csi-rbdplugin
       resource:
         requests:
-          memory: 512Mi
+          memory: 0
+          cpu: 0
         limits:
-          memory: 1Gi
+          memory: 512Mi
     - name : csi-omap-generator
       resource:
         requests:
@@ -325,7 +326,7 @@ csi:
           memory: 0
           cpu: 0
         limits:
-          memory: 1Gi
+          memory: 512Mi
     - name : liveness-prometheus
       resource:
         requests:
