@@ -412,3 +412,27 @@ spec:
   syncPolicy:
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres
+  namespace: argocd
+spec:
+  destination:
+    namespace: postgres
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+  - repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: '11.6.7'
+    chart: postgresql
+    helm:
+      valueFiles:
+        - $values/argocd/postgres/values.yaml
+  - repoURL: https://gogs.jibby.org/jhb2345/server
+    ref: values
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
