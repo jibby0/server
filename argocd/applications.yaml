@@ -344,3 +344,71 @@ spec:
   syncPolicy:
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: rook-ceph
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+  - repoURL: https://charts.rook.io/release
+    targetRevision: '1.13.10'
+    chart: rook-ceph
+    helm:
+      valueFiles:
+        - $values/argocd/rook/rook-ceph-operator-values.yaml
+  - repoURL: https://gogs.jibby.org/jhb2345/server
+    ref: values
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-cluster
+  namespace: argocd
+spec:
+  destination:
+    namespace: rook-ceph
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+  - repoURL: https://charts.rook.io/release
+    targetRevision: '1.13.10'
+    chart: rook-ceph-cluster
+    helm:
+      valueFiles:
+        - $values/argocd/rook/rook-ceph-cluster-values.yaml
+      parameters:
+        - name: "operatorNamespace"
+          value: rook-ceph
+  - repoURL: https://gogs.jibby.org/jhb2345/server
+    ref: values
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-manifest
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/rook-manifest
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
