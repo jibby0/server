@@ -1,7 +1,4 @@
 # From https://github.com/rook/rook/blob/v1.13.10/deploy/charts/rook-ceph/values.yaml
-# export ROOK_OPERATOR_NAMESPACE=rook-ceph
-# export ROOK_CLUSTER_NAMESPACE=rook-ceph
-# KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --install --namespace rook-ceph rook-ceph rook-release/rook-ceph -f rook/rook-ceph-operator-values.yaml --version 1.13.10
 # Default values for rook-ceph-operator
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.

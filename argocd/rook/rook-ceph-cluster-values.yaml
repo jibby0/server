@@ -1,5 +1,4 @@
 # From https://raw.githubusercontent.com/rook/rook/v1.13.10/deploy/charts/rook-ceph-cluster/values.yaml
-# KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade --namespace rook-ceph rook-ceph-cluster --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster -f rook/rook-ceph-cluster-values.yaml --version 1.13.10
 # Default values for a single rook-ceph cluster
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
