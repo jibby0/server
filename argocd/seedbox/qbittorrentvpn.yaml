@@ -317,7 +317,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: qbittorrentvpn-manage
-            image: ghcr.io/stuffanthings/qbit_manage:v4.6.5
+            image: ghcr.io/stuffanthings/qbit_manage:v4.6.5@sha256:4f36632a138b4e5aeab3b765b7f389087bfb140c80dbbec1343eca74dc351245
             command:
              - python3
              - qbit_manage.py
