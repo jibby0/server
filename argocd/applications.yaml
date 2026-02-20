@@ -455,7 +455,7 @@ spec:
   project: default
   sources:
   - repoURL: https://charts.external-secrets.io
-    targetRevision: '2.0.0'
+    targetRevision: '2.0.1'
     chart: external-secrets
   - path: argocd/external-secrets
     repoURL: https://gogs.jibby.org/jhb2345/server
