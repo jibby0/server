@@ -113,7 +113,7 @@ spec:
       data:
         USERNAME: |-
           {{ .username }}
-        USERNAME: |-
+        PASSWORD: |-
           {{ .password }}
   data:
     - secretKey: username

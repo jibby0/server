@@ -60,3 +60,27 @@ spec:
     protocol: TCP
     port: 8080
     targetPort: metrics
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: shelly-plug-exporter
+  namespace: homeassistant
+spec:
+  target:
+    name: shelly-plug-exporter
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        password: |-
+          {{ .password }}
+  data:
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 5d9a0294-6f1e-4fb1-8124-b1d7012d1a8a
+        property: password
