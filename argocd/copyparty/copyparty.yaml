@@ -159,3 +159,26 @@ spec:
                 name: copyparty-service
                 port:
                   number: 3923
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: copyparty-accounts
+  namespace: copyparty
+spec:
+  target:
+    name: copyparty-accounts
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        accounts.conf: |-
+          {{ .accounts }}
+  data:
+    - secretKey: accounts
+      sourceRef:
+        storeRef:
+          name: bitwarden-notes
+          kind: ClusterSecretStore
+      remoteRef:
+        key: f740005f-bcca-4e69-88e9-b3f701333650
