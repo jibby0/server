@@ -84,3 +84,20 @@ spec:
   selector:
     app.kubernetes.io/name: bitwarden-cli
     app.kubernetes.io/instance: bitwarden-cli
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: bitwarden
+  name: external-secret-2-bw-cli
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: bitwarden-cli
+      app.kubernetes.io/name: bitwarden-cli
+  ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app.kubernetes.io/instance: external-secrets
+            app.kubernetes.io/name: external-secrets
