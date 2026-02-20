@@ -93,11 +93,45 @@ spec:
           name: data
         envFrom:
         - secretRef:
-            name: esphome-secret
+            name: esphome
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: esphome-pvc
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: esphome
+  namespace: homeassistant
+spec:
+  target:
+    name: esphome
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        USERNAME: |-
+          {{ .username }}
+        USERNAME: |-
+          {{ .password }}
+  data:
+    - secretKey: username
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: ae12b5aa-193f-4881-8976-b3f70137de15
+        property: username
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: ae12b5aa-193f-4881-8976-b3f70137de15
+        property: password
 ---
 apiVersion: apps/v1
 kind: Deployment
