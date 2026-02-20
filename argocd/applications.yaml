@@ -181,6 +181,8 @@ spec:
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
     automated:
       enabled: true
 ---
