@@ -4,21 +4,37 @@ _Writeup still a WIP, please pardon the dust._
 
 _Below is mostly braindumps & rough commands for creating/tweaking these services. Formal writeup coming soon!_
 
-# Services
+# Applications
 
-Service | Uptime (24h) | ArgoCD
+## Public facing services
+
+Service | Uptime (1mo) | ArgoCD
 -|-|-
-[copyparty](copyparty.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/4/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=copyparty)
-[gogs](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/2/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=gogs)
-[plex](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/1/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=plex)
-[homeassistant](homeassistant.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/6/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=homeassistant)
-[jellyfin](jellyfin.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/7/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=jellyfin)
-[miniflux](miniflux.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/8/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=miniflux)
-[ntfy](ntfy.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/9/uptime?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=ntfy)
+[copyparty](copyparty.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/4/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=copyparty&showAppName=true)
+[gogs](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/2/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=gogs&showAppName=true)
+[plex](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/1/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=plex&showAppName=true)
+[homeassistant](homeassistant.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/6/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=homeassistant&showAppName=true)
+[jellyfin](jellyfin.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/7/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=jellyfin&showAppName=true)
+[miniflux](miniflux.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/8/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=miniflux&showAppName=true)
+[ntfy](ntfy.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/9/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=ntfy&showAppName=true)
 
-# argocd
+## Infra
 
-TODO
+Application | ArgoCD
+-|-
+argocd | ![App status](https://argocd.jibby.org/api/badge?name=argocd&showAppName=true) 
+rook | ![App status](https://argocd.jibby.org/api/badge?name=rook-ceph-operator&showAppName=true) ![App status](https://argocd.jibby.org/api/badge?name=rook-ceph-cluster&showAppName=true) 
+cloudflared | ![App status](https://argocd.jibby.org/api/badge?name=cloudflared&showAppName=true)
+media-automation | ![App status](https://argocd.jibby.org/api/badge?name=media-automation&showAppName=true)
+traefik | ![App status](https://argocd.jibby.org/api/badge?name=traefik&showAppName=true)
+monitoring | ![App status](https://argocd.jibby.org/api/badge?name=monitoring&showAppName=true)
+upgrade-plan | ![App status](https://argocd.jibby.org/api/badge?name=upgrade-plan&showAppName=true)
+
+# Why?
+
+## argocd
+
+## k3s
 
 # k3s
 
@@ -436,8 +452,12 @@ This is a nice PVC option for simpler backup target setups.
 
 # TODO
 
-- [ ] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
-  - https://github.com/dgzlopes/cdk8s-on-argocd
+- [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
+- [ ] https://external-secrets.io/latest/introduction/getting-started/
+- [ ] redo paperless, with dedicated postgres cluster (applicationset)
+- [ ] argocd for backup target
+  - I think about my backup target way less often, IaC would be very helpful for it
+- [ ] Try https://github.com/dgzlopes/cdk8s-on-argocd
 - [ ] explore metallb failover, or cilium
   - https://metallb.universe.tf/concepts/layer2/
   - https://cilium.io/

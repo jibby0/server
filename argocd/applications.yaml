@@ -366,6 +366,8 @@ spec:
     ref: values
     targetRevision: HEAD
   syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
     automated:
       enabled: true
 ---
@@ -393,6 +395,8 @@ spec:
     ref: values
     targetRevision: HEAD
   syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
     automated:
       enabled: true
 ---
@@ -434,5 +438,28 @@ spec:
     ref: values
     targetRevision: HEAD
   syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+spec:
+  destination:
+    namespace: external-secrets
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    targetRevision: '2.0.0'
+    chart: external-secrets
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
     automated:
       enabled: true

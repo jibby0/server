@@ -1,13 +1,5 @@
-htpasswd
-.env
-playbook.retry
-hosts
-secret-*.yaml
-credentials-*
+secrets/
 *.swp
-
-.venv
-__pycache__
 
 *.d.ts
 *.js
