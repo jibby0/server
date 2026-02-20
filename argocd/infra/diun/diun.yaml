@@ -77,7 +77,7 @@ spec:
             - name: DIUN_NOTIF_NTFY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: diun
+                  name: diun-ntfy-token
                   key: ntfy-token
                   optional: false
             - name: DIUN_NOTIF_NTFY_TOPIC
