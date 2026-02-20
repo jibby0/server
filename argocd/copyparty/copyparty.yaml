@@ -57,7 +57,7 @@ spec:
             path: default.conf
       - name: accounts
         secret:
-          secretName: copyparty-secret-accounts
+          secretName: copyparty-accounts
 ---
 apiVersion: v1
 kind: ConfigMap
