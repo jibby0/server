@@ -128,7 +128,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: alertmanager
   namespace: argocd
 spec:
   destination:
@@ -138,7 +138,51 @@ spec:
   source:
     directory:
       recurse: true
-    path: argocd/infra/monitoring
+    path: argocd/infra/monitoring/alertmanager
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: argocd/infra/monitoring/grafana
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: argocd/infra/monitoring/prometheus
     repoURL: https://gogs.jibby.org/jhb2345/server
     targetRevision: HEAD
   syncPolicy:
