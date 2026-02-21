@@ -34,8 +34,8 @@ spec:
         - name: DUPLICATI__WEBSERVICE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: duplicati-secret
-              key: password
+              name: duplicati
+              key: DUPLICATI__WEBSERVICE_PASSWORD
         volumeMounts:
         - mountPath: "/plex"
           name: plex
@@ -89,9 +89,12 @@ spec:
           - name: tree
             image: alpine:3.18.4
             imagePullPolicy: IfNotPresent
-            envFrom:
-            - secretRef:
-                name: ntfy-auth-secret
+            env:
+            - name: NTFY_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: duplicati
+                  key: NTFY_AUTH
             command:
             - /bin/sh
             - -c
@@ -130,3 +133,45 @@ spec:
                 name: duplicati-service
                 port:
                   number: 8200
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: duplicati
+  namespace: plex
+spec:
+  target:
+    name: duplicati
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        DUPLICATI__WEBSERVICE_PASSWORD: |-
+          {{ .password }}
+        NTFY_AUTH: |-
+          {{ .ntfyuser }}:{{ .ntfypass }}
+  data:
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 15ef8c69-b0ed-4ca0-8871-b33b003c29de
+        property: password
+    - secretKey: ntfyuser
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 674fbf3d-531a-4ca6-afec-b1d7012d1a8a
+        property: username
+    - secretKey: ntfypass
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 674fbf3d-531a-4ca6-afec-b1d7012d1a8a
+        property: password
