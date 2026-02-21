@@ -1,0 +1,19 @@
+# https://github.com/vmware-tanzu/helm-charts/blob/velero-11.3.2/charts/velero/values.yaml
+
+kubectl:
+  image:
+    repository: public.ecr.aws/bitnami/kubectl
+
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.13.1
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+  - name: velero-plugin-for-webdav
+    image: talinx/velero-plugin-for-webdav:v1.0.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
