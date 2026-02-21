@@ -324,12 +324,17 @@ spec:
               subPath: config.yml
           volumes:
           - name: config
-            configMap:
-              name: qbittorrentvpn-manage-config
-              configMap:
+            secret:
+              secretName: qbittorrentvpn-manage
               items:
               - key: config.yml
                 path: config.yml
+            #configMap:
+            #  name: qbittorrentvpn-manage-config
+            #  configMap:
+            #  items:
+            #  - key: config.yml
+            #    path: config.yml
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
