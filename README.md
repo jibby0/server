@@ -27,8 +27,9 @@ rook | ![App status](https://argocd.jibby.org/api/badge?name=rook-ceph-operator&
 cloudflared | ![App status](https://argocd.jibby.org/api/badge?name=cloudflared&showAppName=true)
 media-automation | ![App status](https://argocd.jibby.org/api/badge?name=media-automation&showAppName=true)
 traefik | ![App status](https://argocd.jibby.org/api/badge?name=traefik&showAppName=true)
-monitoring | ![App status](https://argocd.jibby.org/api/badge?name=monitoring&showAppName=true)
+monitoring | ![App status](https://argocd.jibby.org/api/badge?name=prometheus&showAppName=true) ![App status](https://argocd.jibby.org/api/badge?name=grafana&showAppName=true) ![App status](https://argocd.jibby.org/api/badge?name=alertmanager&showAppName=true)
 upgrade-plan | ![App status](https://argocd.jibby.org/api/badge?name=upgrade-plan&showAppName=true)
+duplicati | ![App status](https://argocd.jibby.org/api/badge?name=duplicati&showAppName=true)
 
 # Why?
 
