@@ -9,7 +9,7 @@ _Below is mostly braindumps & rough commands for creating/tweaking these service
 ## Public facing services
 
 Service | Uptime (1mo) | ArgoCD
--|-|-
+---|---|---
 [copyparty](copyparty.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/4/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=copyparty&showAppName=true)
 [gogs](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/2/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=gogs&showAppName=true)
 [plex](gogs.jibby.org) | [![Uptime](https://status.jibby.org/api/badge/1/uptime/720?label)](https://status.jibby.org/) | ![App status](https://argocd.jibby.org/api/badge?name=plex&showAppName=true)
@@ -21,7 +21,7 @@ Service | Uptime (1mo) | ArgoCD
 ## Infra
 
 Application | ArgoCD
--|-
+---|---
 argocd | ![App status](https://argocd.jibby.org/api/badge?name=argocd&showAppName=true) 
 rook | ![App status](https://argocd.jibby.org/api/badge?name=rook-ceph-operator&showAppName=true) ![App status](https://argocd.jibby.org/api/badge?name=rook-ceph-cluster&showAppName=true) 
 cloudflared | ![App status](https://argocd.jibby.org/api/badge?name=cloudflared&showAppName=true)
