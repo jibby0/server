@@ -145,7 +145,7 @@ spec:
           name: bitwarden-login
           kind: ClusterSecretStore
       remoteRef:
-        key: ae12b5aa-193f-4881-8976-b3f70137de15
+        key: af0ecb7c-25e5-4907-82be-b3f80121ceae
         property: password
     - secretKey: ntfyuser
       sourceRef:
