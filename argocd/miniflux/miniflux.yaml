@@ -56,3 +56,35 @@ spec:
     protocol: TCP
     port: 8080
     targetPort: http-web-svc
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: miniflux-db-secret
+  namespace: miniflux
+spec:
+  target:
+    name: miniflux-db-secret
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        DATABASE_URL: |-
+          postgres://{{ .username }}:{{ .password }}@postgres-postgresql.postgres.svc.cluster.local:5432/miniflux?sslmode=disable
+  data:
+    - secretKey: username
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 8d733830-0f81-4de7-93e2-b3f8007a08b1
+        property: username
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 8d733830-0f81-4de7-93e2-b3f8007a08b1
+        property: password
