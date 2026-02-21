@@ -556,3 +556,29 @@ spec:
       - CreateNamespace=true
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero
+  namespace: argocd
+spec:
+  destination:
+    namespace: velero
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+  - repoURL: https://vmware-tanzu.github.io/helm-charts
+    targetRevision: '11.3.2'
+    chart: velero
+    helm:
+      valueFiles:
+        - $values/argocd/infra/velero/values.yaml
+  - repoURL: https://gogs.jibby.org/jhb2345/server
+    ref: values
+    targetRevision: HEAD
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      enabled: true

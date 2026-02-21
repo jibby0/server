@@ -12,7 +12,7 @@ initContainers:
       - mountPath: /target
         name: plugins
   - name: velero-plugin-for-webdav
-    image: talinx/velero-plugin-for-webdav:v1.0.0
+    image: talinx/velero-plugin-for-webdav:1.0.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
