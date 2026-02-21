@@ -19,8 +19,8 @@ spec:
       httpConfig:
         basicAuth:
           username:
-            name: ntfy-alertmanager-user
-            key: name
+            name: ntfy-alertmanager
+            key: ntfyamuser
           password:
-            name: ntfy-alertmanager-user
-            key: password
+            name: ntfy-alertmanager
+            key: ntfyampass

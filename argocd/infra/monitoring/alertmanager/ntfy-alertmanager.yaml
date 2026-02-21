@@ -27,7 +27,7 @@ spec:
       volumes:
         - name: config
           secret:
-            secretName: ntfy-alertmanager-config
+            secretName: ntfy-alertmanager
 ---
 apiVersion: v1
 kind: Service
@@ -67,15 +67,19 @@ spec:
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
-  name: ntfy-alertmanager-config
+  name: ntfy-alertmanager
   namespace: monitoring
 spec:
   target:
-    name: ntfy-alertmanager-config
+    name: ntfy-alertmanager
     deletionPolicy: Delete
     template:
       type: Opaque
       data:
+        ntfyamuser: |-
+          {{ .ntfyamuser }}
+        ntfyampass: |-
+          {{ .ntfyampass }}
         config.yaml: |-
           # Ref: https://git.xenrox.net/~xenrox/ntfy-alertmanager/tree/master/item/config.scfg
 
