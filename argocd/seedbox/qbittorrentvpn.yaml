@@ -192,7 +192,6 @@ spec:
         - containerPort: 8000
           name: metrics
         env:
-
         - name: QBITTORRENT_HOST
           value: qbittorrentvpn.lan.jibby.org
         - name: QBITTORRENT_PORT
@@ -290,6 +289,149 @@ spec:
       remoteRef:
         key: 8dd7dfc3-800d-4af5-8a45-b23f0132806c
         property: password
+
+# qbit_manage to auto-tag by tracker URL
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qbittorrentvpn-manage
+  namespace: plex
+spec:
+  schedule: "*/10 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 60
+      template:
+        metadata:
+          labels:
+            app: qbittorrentvpn-manage
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: qbittorrentvpn-manage
+            image: ghcr.io/stuffanthings/qbit_manage:v4.6.5@sha256:4f36632a138b4e5aeab3b765b7f389087bfb140c80dbbec1343eca74dc351245
+            command:
+             - python3
+             - qbit_manage.py
+             - "--run"
+            volumeMounts:
+            - name: config
+              mountPath: /config/config.yml
+              subPath: config.yml
+          volumes:
+          - name: config
+            configMap:
+              name: qbittorrentvpn-manage-config
+              configMap:
+              items:
+              - key: config.yml
+                path: config.yml
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: qbittorrentvpn-manage
+  namespace: plex
+spec:
+  target:
+    name: qbittorrentvpn-manage
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        config.yml: |-
+          {{ .trackertags }}
+          qbt:
+            host: https://qbittorrentvpn.lan.jibby.org
+            user: {{ .username }}
+            pass: {{ .password }}
+          commands:
+            recheck: false
+            cat_update: false
+            tag_update: true
+            rem_unregistered: false
+            rem_orphaned: false
+            tag_tracker_error: false
+            tag_nohardlinks: false
+            share_limits: false
+            skip_cleanup: false
+            dry_run: false
+            skip_qb_version_check: false
+
+          # Not using any of these fields, but they're required for qbit_manage
+          cat:
+            tv-sonarr: Uncategorized
+            completed: /not/using/cat
+          recyclebin:
+            enabled: false
+            save_torrents: false
+            split_by_category: false
+            empty_after_x_days:
+          directory:
+            root_dir: /not/using/rootdir
+            torrents_dir:
+          orphaned:
+            max_orphaned_files_to_delete: 50
+            min_file_age_minutes: 0
+            empty_after_x_days:
+            exclude_patterns:
+          settings:
+            force_auto_tmm: false
+            tracker_error_tag: issue
+            nohardlinks_tag: noHL
+            stalled_tag: stalledDL
+            share_limits_tag: ~share_limit
+            share_limits_min_seeding_time_tag: MinSeedTimeNotReached
+            share_limits_min_num_seeds_tag: MinSeedsNotMet
+            share_limits_last_active_tag: LastActiveLimitNotReached
+            cat_filter_completed: true
+            share_limits_filter_completed: true
+            tag_nohardlinks_filter_completed: true
+            rem_unregistered_filter_completed: false
+            cat_update_all: true
+            disable_qbt_default_share_limits: true
+            tag_stalled_torrents: true
+            rem_unregistered_grace_minutes: 10
+            rem_unregistered_max_torrents: 10
+
+            private_tag:
+            force_auto_tmm_ignore_tags: []
+            rem_unregistered_ignore_list: []
+          webhooks:
+            error:
+            run_start:
+            run_end:
+            function:
+              tag_tracker_error:
+              share_limits:
+  data:
+    - secretKey: username
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 8dd7dfc3-800d-4af5-8a45-b23f0132806c
+        property: username
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 8dd7dfc3-800d-4af5-8a45-b23f0132806c
+        property: password
+    - secretKey: trackertags
+      sourceRef:
+        storeRef:
+          name: bitwarden-notes
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 54c175aa-aa4f-4a28-a8f6-b3f80146e440
 
 # Restart qbittorrentvpn reguarly. Sometimes VPN throughput slows down & a restart helps.
 #---
@@ -404,44 +546,3 @@ spec:
 #- kind: ServiceAccount
 #  name: qbittorrentvpn-restart-serviceaccount
 #  namespace: plex
-
-# qbit_manage to auto-tag by tracker URL
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: qbittorrentvpn-manage
-  namespace: plex
-spec:
-  schedule: "*/10 * * * *"
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
-  concurrencyPolicy: Forbid
-  jobTemplate:
-    spec:
-      activeDeadlineSeconds: 60
-      template:
-        metadata:
-          labels:
-            app: qbittorrentvpn-manage
-        spec:
-          restartPolicy: OnFailure
-          containers:
-          - name: qbittorrentvpn-manage
-            image: ghcr.io/stuffanthings/qbit_manage:v4.6.5@sha256:4f36632a138b4e5aeab3b765b7f389087bfb140c80dbbec1343eca74dc351245
-            command:
-             - python3
-             - qbit_manage.py
-             - "--run"
-            volumeMounts:
-            - name: config
-              mountPath: /config/config.yml
-              subPath: config.yml
-          volumes:
-          - name: config
-            configMap:
-              name: qbittorrentvpn-manage-config
-              configMap:
-              items:
-              - key: config.yml
-                path: config.yml
