@@ -129,7 +129,6 @@ spec:
               silence-duration 24h
               url http://alertmanager-operated.monitoring.svc.cluster.local:9093
           }
-
   data:
     - secretKey: ntfyamuser
       sourceRef:
