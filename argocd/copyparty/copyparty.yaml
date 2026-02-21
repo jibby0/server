@@ -168,12 +168,22 @@ spec:
       type: Opaque
       data:
         accounts.conf: |-
-          {{ .accounts }}
+          [accounts]
+            {{ .username }}: {{ .password }}
   data:
-    - secretKey: accounts
+    - secretKey: username
       sourceRef:
         storeRef:
-          name: bitwarden-notes
+          name: bitwarden-login
           kind: ClusterSecretStore
       remoteRef:
-        key: f740005f-bcca-4e69-88e9-b3f701333650
+        key: 7c7ffb0a-c14d-4091-ab94-b32d016335e6
+        property: username
+    - secretKey: password
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 7c7ffb0a-c14d-4091-ab94-b32d016335e6
+        property: password
