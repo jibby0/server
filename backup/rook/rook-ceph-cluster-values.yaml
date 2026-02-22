@@ -9,11 +9,6 @@ cephClusterSpec:
   mgr:
     count: 1
     allowMultiplePerNode: true
-    modules:
-      - name: pg_autoscaler
-        enabled: false
-      - name: rook
-        enabled: true
 
   dashboard:
     port: 8080
@@ -92,8 +87,32 @@ cephClusterSpec:
         cpu: 0
         memory: "50Mi"
 
-cephBlockPools: []
-cephFileSystems: []
+cephBlockPools:
+  - name: ceph-blockpool
+    spec:
+      failureDomain: osd
+      erasureCoded:
+        dataChunks: 2
+        codingChunks: 1
+    storageClass:
+      enabled: true
+      name: ceph-block
+      isDefault: true
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: "Immediate"
+      parameters:
+        # These secrets contain Ceph admin credentials.
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: "rook-ceph"
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-stage-secret-namespace: "rook-ceph"
+
+        csi.storage.k8s.io/fstype: ext4
 cephObjectStores:
   - name: ceph-objectstore
     spec:
@@ -106,8 +125,6 @@ cephObjectStores:
         erasureCoded:
           dataChunks: 2
           codingChunks: 1
-        parameters:
-          bulk: "true"
       preservePoolsOnDelete: true
       gateway:
         port: 80
@@ -128,4 +145,4 @@ cephObjectStores:
       enabled: false
     route:
       enabled: false
-
+cephFileSystems: []
