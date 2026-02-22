@@ -4,7 +4,7 @@ toolbox:
 
 cephClusterSpec:
   mon:
-    count: 3
+    count: 2
     allowMultiplePerNode: true
   mgr:
     allowMultiplePerNode: true
