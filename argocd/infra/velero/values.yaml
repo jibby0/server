@@ -27,7 +27,7 @@ configuration:
     accessMode: ReadWrite
     credential:
       # name of the secret used by this backupStorageLocation.
-      name: velero-aws
+      name: velero-aws # TODO
       # name of key that contains the secret data to be used.
       key: credentials
     # Additional provider-specific configuration. See link above
@@ -35,7 +35,7 @@ configuration:
     config:
       s3Url: https://s3.bnuuy.org:8443
       region: default
-    # s3ForcePathStyle:
+      s3ForcePathStyle: "true"
     #  kmsKeyId:
     #  resourceGroup:
     #  The ID of the subscription containing the storage account, if different from the cluster’s subscription. (Azure only)
@@ -83,3 +83,16 @@ configuration:
   defaultVolumesToFsBackup: true
 
   features: EnableCSI
+
+schedules:
+  default:
+    disabled: false
+    paused: false
+    schedule: "0 2 * * *"
+    useOwnerReferencesInBackup: false
+    skipImmediately: false
+    template:
+      ttl: "240h"
+      storageLocation: default
+      includedNamespaces:
+      - '*'
