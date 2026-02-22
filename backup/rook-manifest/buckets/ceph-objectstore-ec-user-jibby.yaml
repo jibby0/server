@@ -1,0 +1,15 @@
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: jibby
+  namespace: rook-ceph
+spec:
+  store: ceph-objectstore
+  displayName: jibby
+  quotas:
+    maxBuckets: 2
+    maxSize: 8T
+    maxObjects: -1
+  capabilities:
+    user: "*"
+    bucket: "*"
