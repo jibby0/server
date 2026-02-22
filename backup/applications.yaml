@@ -58,6 +58,7 @@ spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
     automated:
       enabled: true
 ---
@@ -87,5 +88,6 @@ spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
     automated:
       enabled: true
