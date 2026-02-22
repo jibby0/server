@@ -34,7 +34,7 @@ configuration:
     # for details of required/optional fields for your provider.
     config:
       s3Url: https://s3.bnuuy.org:8443
-      #region: default
+      region: default
     # s3ForcePathStyle:
     #  kmsKeyId:
     #  resourceGroup:
