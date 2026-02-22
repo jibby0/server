@@ -35,6 +35,8 @@ spec:
     automated:
       enabled: true
 ---
+# If rook ever needs a full re-provisioning, the operator must complete before
+# the cluster deployment starts.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
