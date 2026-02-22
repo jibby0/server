@@ -114,15 +114,15 @@ cephObjectStores:
         instances: 1
         priorityClassName: system-cluster-critical
     storageClass:
-      enabled: true
-      name: ceph-bucket
-      reclaimPolicy: Delete
-      volumeBindingMode: "Immediate"
-      annotations: {}
-      labels: {}
-      parameters:
-        # note: objectStoreNamespace and objectStoreName are configured by the chart
-        region: us-east-1
+      enabled: false
+      #name: ceph-bucket
+      #reclaimPolicy: Delete
+      #volumeBindingMode: "Immediate"
+      #annotations: {}
+      #labels: {}
+      #parameters:
+      #  # note: objectStoreNamespace and objectStoreName are configured by the chart
+      #  region: us-east-1
     ingress:
       enabled: false
     route:
