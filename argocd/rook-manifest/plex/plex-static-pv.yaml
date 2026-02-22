@@ -8,7 +8,7 @@ spec:
   accessModes:
   - ReadWriteMany
   capacity:
-    storage: 20Ti
+    storage: 60Ti
   csi:
     controllerExpandSecretRef:
       name: rook-csi-cephfs-provisioner
