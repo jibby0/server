@@ -12,17 +12,30 @@ spec:
         exposedPort: 8443
 
     additionalArguments:
+      - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,10.0.0.0/24"
+      - "--entrypoints.web.http.redirections.entryPoint.to=:8443"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.transport.respondingTimeouts.readTimeout=0s"
+
       # Auto cert renewal via cloudflare
       - "--certificatesresolvers.letsencrypt.acme.email=joshbicking@comcast.net"
       - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
       - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
-      - "--entrypoints.websecure.http.tls.domains[0].main=s3.bnuuy.org"
+
+      
+      # Main
+      - "--entrypoints.websecure.http.tls.domains[0].main=bnuuy.org"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.bnuuy.org"
+      # LAN-only
+      - "--entrypoints.websecure.http.tls.domains[1].main=lan.bnuuy.org"
+      - "--entrypoints.websecure.http.tls.domains[1].sans=*.lan.bnuuy.org"
 
       # debug, uncomment for testing
       # - "--log.level=DEBUG"
       # - "--certificatesresolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+
 
     env:
       - name: CLOUDFLARE_EMAIL
@@ -65,3 +78,8 @@ spec:
     service:
       spec:
         externalTrafficPolicy: Local
+
+    providers:
+      kubernetesCRD:
+        # Allows IngressRoutes to use middleware from a different namespace
+        allowCrossNamespace: true
