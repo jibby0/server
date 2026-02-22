@@ -33,9 +33,7 @@ duplicati | ![App status](https://argocd.jibby.org/api/badge?name=duplicati&show
 
 # Why?
 
-## argocd
-
-## k3s
+TODO
 
 # k3s
 
@@ -68,14 +66,6 @@ Ensure you account for any node taints. Anecdotal, but I had one node fail to ru
 $ sudo crictl rmi --prune
 ```
 
-## limiting log size
-
-(Shouldn't be a problem on newer Debian, where rsyslog is not in use.)
-
-In /etc/systemd/journald.conf, set "SystemMaxUse=100M"
-
-In /etc/logrotate.conf, set "size 100M"
-
 ## purging containerd snapshots
 
 https://github.com/containerd/containerd/blob/main/docs/content-flow.md
@@ -104,6 +94,40 @@ Uses traefik, the k3s default.
 externalTrafficPolicy: Local is used to preserve forwarded IPs.
 
 A `cluster-ingress=true` label is given to the node my router is pointing to. Some services use a nodeAffinity to request it. (ex: for pods with `hostNetwork: true`, this ensures they run on the node with the right IP)
+
+# argocd
+
+## bootstrap
+
+https://argo-cd.readthedocs.io/en/stable/getting_started/
+
+```
+kubectl create namespace argocd
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.3.1/manifests/install.yaml
+```
+
+& install the CLI: 
+https://argo-cd.readthedocs.io/en/stable/cli_installation/
+
+## webhooks
+
+The default admin account does not have the ability to generate api keys, so make a dedicated webhook user:
+
+```
+$ kubectl -n argocd edit configmap argocd-cm
+
+...
+data:
+  accounts.webhook: apiKey
+...
+```
+
+Generate a token for the user:
+
+```
+argocd account generate-token --account webhook
+```
+
 
 # rook
 
@@ -250,95 +274,6 @@ $ python3 /tmp/placementoptimizer.py -v balance --max-pg-moves 10 | tee /tmp/bal
 $ bash /tmp/balance-upmaps
 ```
 
-# NVIDIA
-
-## nvidia driver (on debian)
-
-```
-curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey |   sudo apt-key add -
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list |   sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list
-
-wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda-repo-debian11-11-6-local_11.6.2-510.47.03-1_amd64.deb
-sudo dpkg -i cuda-repo-debian11-11-6-local_11.6.2-510.47.03-1_amd64.deb
-sudo apt-key add /var/cuda-repo-debian11-11-6-local/7fa2af80.pub
-sudo apt-get update
-```
-
-### install kernel headers
-
-```
-sudo apt install cuda nvidia-container-runtime nvidia-kernel-dkms
-
-sudo apt install --reinstall nvidia-kernel-dkms
-```
-
-### verify dkms is actually running
-
-```
-sudo vi /etc/modprobe.d/blacklist-nvidia-nouveau.conf
-
-blacklist nouveau
-options nouveau modeset=0
-
-sudo update-initramfs -u
-```
-
-## configure containerd to use nvidia by default
-
-Copy https://github.com/k3s-io/k3s/blob/v1.24.2%2Bk3s2/pkg/agent/templates/templates_linux.go into `/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl` (substitute your k3s version)
-
-Edit the file to add a `[plugins.cri.containerd.runtimes.runc.options]` section:
-
-```
-<... snip>
-  conf_dir = "{{ .NodeConfig.AgentConfig.CNIConfDir }}"
-{{end}}
-[plugins.cri.containerd.runtimes.runc]
-  runtime_type = "io.containerd.runc.v2"
-
-[plugins.cri.containerd.runtimes.runc.options]
-  BinaryName = "/usr/bin/nvidia-container-runtime"
-
-{{ if .PrivateRegistryConfig }}
-<... snip>
-```
-
-& then `systemctl restart k3s`
-
-Label your GPU-capable nodes: `kubectl label nodes <node name> gpu-node=true`
-
-& then install the nvidia device plugin:
-
-```
-helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
-helm repo update
-KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=0.12.2 --namespace nvidia-device-plugin --create-namespace --set-string nodeSelector.gpu-node=true
-```
-
-Ensure the pods on the namespace are Running.
-
-Test GPU passthrough by applying `examples/cuda-pod.yaml`, then exec-ing into it & running `nvidia-smi`.
-
-### Share NVIDIA GPU
-
-https://github.com/NVIDIA/k8s-device-plugin#shared-access-to-gpus-with-cuda-time-slicing
-
-```yaml
-version: v1
-sharing:
-  timeSlicing:
-    renameByDefault: false
-    failRequestsGreaterThanOne: false
-    resources:
-    - name: nvidia.com/gpu
-      replicas: 5
-```
-
-```
-$ helm upgrade -i nvdp nvdp/nvidia-device-plugin ... --set-file config.map.config=nvidia-device-plugin-config.yaml
-```
-
 # ceph client for cephfs volumes
 
 ## Kernel driver
@@ -454,10 +389,15 @@ This is a nice PVC option for simpler backup target setups.
 # TODO
 
 - [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
-- [ ] https://external-secrets.io/latest/introduction/getting-started/
+- [x] https://external-secrets.io/latest/introduction/getting-started/
+- redo backup target
+  - [ ] argocd + lan ui domain
+    - I think about my backup target way less often, IaC would be very helpful for it
+  - [ ] single host ceph
+    - removes openebs & minio requirement, plus self-healing
+  - [ ] external-secrets
 - [ ] redo paperless, with dedicated postgres cluster (applicationset)
-- [ ] argocd for backup target
-  - I think about my backup target way less often, IaC would be very helpful for it
+- [ ] upgrade rook
 - [ ] Try https://github.com/dgzlopes/cdk8s-on-argocd
 - [ ] explore metallb failover, or cilium
   - https://metallb.universe.tf/concepts/layer2/
