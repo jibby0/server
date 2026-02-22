@@ -17,4 +17,4 @@ spec:
               service:
                 name: rook-ceph-rgw-ceph-objectstore
                 port:
-                  number: 6981
+                  number: 80
