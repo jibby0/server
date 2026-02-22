@@ -62,33 +62,33 @@ configuration:
     # annotations allows adding arbitrary annotations to this BackupStorageLocation resource. Optional.
     annotations: {}
 
-  # Parameters for the VolumeSnapshotLocation(s). Configure multiple by adding other element(s) to the volumeSnapshotLocation slice.
-  # See https://velero.io/docs/v1.6/api-types/volumesnapshotlocation/
-  volumeSnapshotLocation:
-    # name is the name of the volume snapshot location where snapshots are being taken. If a name is not provided,
-    # a volume snapshot location will be created with the name "default". Optional.
-  - name:
-    # provider is the name for the volume snapshot provider.
-    provider: ""
-    credential:
-      # name of the secret used by this volumeSnapshotLocation.
-      name:
-      # name of key that contains the secret data to be used.
-      key:
-    # Additional provider-specific configuration. See link above
-    # for details of required/optional fields for your provider.
-    config: {}
-  #    region:
-  #    apiTimeout:
-  #    resourceGroup:
-  #    The ID of the subscription where volume snapshots should be stored, if different from the cluster’s subscription. If specified, also requires `configuration.volumeSnapshotLocation.config.resourceGroup`to be set. (Azure only)
-  #    subscriptionId:
-  #    incremental:
-  #    snapshotLocation:
-  #    project:
+  ## Parameters for the VolumeSnapshotLocation(s). Configure multiple by adding other element(s) to the volumeSnapshotLocation slice.
+  ## See https://velero.io/docs/v1.6/api-types/volumesnapshotlocation/
+  volumeSnapshotLocation: []
+  #  # name is the name of the volume snapshot location where snapshots are being taken. If a name is not provided,
+  #  # a volume snapshot location will be created with the name "default". Optional.
+  #- name:
+  #  # provider is the name for the volume snapshot provider.
+  #  provider: ""
+  #  credential:
+  #    # name of the secret used by this volumeSnapshotLocation.
+  #    name:
+  #    # name of key that contains the secret data to be used.
+  #    key:
+  #  # Additional provider-specific configuration. See link above
+  #  # for details of required/optional fields for your provider.
+  #  config: {}
+  ##    region:
+  ##    apiTimeout:
+  ##    resourceGroup:
+  ##    The ID of the subscription where volume snapshots should be stored, if different from the cluster’s subscription. If specified, also requires `configuration.volumeSnapshotLocation.config.resourceGroup`to be set. (Azure only)
+  ##    subscriptionId:
+  ##    incremental:
+  ##    snapshotLocation:
+  ##    project:
 
-    # annotations allows adding arbitrary annotations to this VolumeSnapshotLocation resource. Optional.
-    annotations: {}
+  #  # annotations allows adding arbitrary annotations to this VolumeSnapshotLocation resource. Optional.
+  #  annotations: {}
 
   defaultVolumesToFsBackup: true
 
