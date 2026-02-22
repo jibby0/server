@@ -105,12 +105,7 @@ cephObjectStores:
       preservePoolsOnDelete: true
       gateway:
         port: 80
-        resources:
-          limits:
-            memory: "2Gi"
-          requests:
-            cpu: "1000m"
-            memory: "1Gi"
+        resources: {}
         instances: 1
         priorityClassName: system-cluster-critical
     storageClass:
