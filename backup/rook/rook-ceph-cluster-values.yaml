@@ -4,10 +4,14 @@ toolbox:
 
 cephClusterSpec:
   mon:
-    count: 2
+    count: 1
     allowMultiplePerNode: true
   mgr:
+    count: 1
     allowMultiplePerNode: true
+    modules:
+      - name: pg_autoscaler
+        enabled: false
 
   dashboard:
     port: 8080
