@@ -36,6 +36,11 @@ spec:
             secretKeyRef:
               name: duplicati
               key: DUPLICATI__WEBSERVICE_PASSWORD
+        - name: SETTINGS_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: duplicati
+              key: DUPLICATI__WEBSERVICE_PASSWORD
         volumeMounts:
         - mountPath: "/plex"
           name: plex
