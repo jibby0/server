@@ -93,3 +93,22 @@ spec:
       - ServerSideApply=true
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-manifest
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: backup/rook-manifest
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+    directory:
+      recurse: true
+  syncPolicy:
+    automated:
+      enabled: true
