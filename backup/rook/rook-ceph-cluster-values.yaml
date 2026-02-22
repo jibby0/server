@@ -12,6 +12,8 @@ cephClusterSpec:
     modules:
       - name: pg_autoscaler
         enabled: false
+      - name: rook
+        enabled: true
 
   dashboard:
     port: 8080
