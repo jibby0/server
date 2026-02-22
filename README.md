@@ -391,11 +391,12 @@ This is a nice PVC option for simpler backup target setups.
 - [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
 - [x] https://external-secrets.io/latest/introduction/getting-started/
 - redo backup target
-  - [ ] argocd + lan ui domain
+  - [x] argocd + lan ui domain
     - I think about my backup target way less often, IaC would be very helpful for it
-  - [ ] single host ceph
+  - [x] single host ceph
     - removes openebs & minio requirement, plus self-healing
   - [ ] external-secrets
+  - [ ] weekly restore + validation
 - [ ] redo paperless, with dedicated postgres cluster (applicationset)
 - [ ] upgrade rook
 - [ ] Try https://github.com/dgzlopes/cdk8s-on-argocd
