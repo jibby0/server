@@ -81,6 +81,8 @@ configuration:
   #  annotations: {}
 
   defaultVolumesToFsBackup: true
+  defaultItemOperationTimeout: 72h
+  defaultBackupTTL: 144h
 
   features: EnableCSI
 
