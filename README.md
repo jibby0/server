@@ -409,7 +409,6 @@ This is a nice PVC option for simpler backup target setups.
 - [ ] logs
   - https://old.reddit.com/r/kubernetes/comments/y3ze83/lightweight_logging_tool_for_k3s_cluster_with/
 - [ ] explore backup over tailscale
-- [ ] explore bitwarden secret integration (similar to 1password integration in https://xeiaso.net/talks/2025/surreal-joy-homelab/)
 - [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
   - PreferNoSchedule taint on rook nodes
 - [ ] write up: seedbox setup & sharing the disk w/ NFS
