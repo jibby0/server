@@ -588,3 +588,21 @@ spec:
       - CreateNamespace=true
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: velero-secret
+  namespace: argocd
+spec:
+  destination:
+    namespace: velero
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: argocd/infra/velero-secret
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
