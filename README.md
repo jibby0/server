@@ -268,10 +268,11 @@ See the README for how this balancing strategy compares to ceph's `balancer` mod
 
 TLDR:
 ```
-$ kubectl -n rook-ceph cp placementoptimizer.py <rook-ceph-tools pod>:/tmp/
-$ kubectl -n rook-ceph exec -it deployment/rook-ceph-tools -- bash
-$ python3 /tmp/placementoptimizer.py -v balance --max-pg-moves 10 | tee /tmp/balance-upmaps
-$ bash /tmp/balance-upmaps
+kubectl -n rook-ceph cp placementoptimizer.py $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o jsonpath='{.items[0].metadata.name}'):/tmp/
+
+kubectl -n rook-ceph exec -it deployment/rook-ceph-tools -- bash -c 'python3 /tmp/placementoptimizer.py -v balance --max-pg-moves 50 | tee /tmp/balance-upmaps'
+
+kubectl -n rook-ceph exec -it deployment/rook-ceph-tools -- bash /tmp/balance-upmaps
 ```
 
 # ceph client for cephfs volumes
@@ -301,7 +302,8 @@ sudo vi /etc/fstab
 [global]
         fsid = <my cluster uuid>
         mon_host = [v2:192.168.1.1:3300/0,v1:192.168.1.1:6789/0] [v2:192.168.1.2:3300/0,v1:192.168.1.2:6789/0]
-$ cat /etc/ceph/ceph.client.admin.keyring
+
+# /etc/ceph/ceph.client.admin.keyring
 [client.admin]
         key = <my key>
         caps mds = "allow *"
@@ -323,9 +325,9 @@ https://unix.stackexchange.com/questions/554908/disable-spectre-and-meltdown-mit
 
 # Monitoring
 
-https://rpi4cluster.com/monitoring/monitor-intro/, + what's in the `monitoring` folder.
+The `monitoring` folder is mostly the manifests from https://rpi4cluster.com/monitoring/monitor-intro/.
 
-Tried https://github.com/prometheus-operator/kube-prometheus. The only way to persist dashboards is to add them to Jsonnet & apply the generated configmap. I'm not ready for that kind of IaC commitment in a homelab.
+I tried https://github.com/prometheus-operator/kube-prometheus, & when I did, the only way to persist dashboards is to add them to Jsonnet & apply the generated configmap. I don't need that kind of IaC commitment in monitoring personal use dashboards.
 
 # Exposing internal services
 
@@ -347,32 +349,11 @@ Then, internal services can be exposed with an Ingress, as a subdomain of `lan.j
 
 # Backups
 
-My backups target is a machine running
-- k3s
-- minio
-- velero
-Important services are backed up with velero to the remote minio instance. These backups can be restored to the remote k3s instance to ensure functionality, or function as a secondary service instance.
+TODO: k3s, argocd, rook
 
-## installing velero
-```
-KUBECONFIG=/etc/rancher/k3s/k3s.yaml velero install \
- --provider aws \
- --plugins velero/velero-plugin-for-aws:v1.0.0 \
- --bucket velero  \
- --secret-file ./credentials-velero  \
- --use-volume-snapshots=true \
- --default-volumes-to-fs-backup \
- --use-node-agent \
- --backup-location-config region=default,s3ForcePathStyle="true",s3Url=http://172.16.69.234:9000  \
- --snapshot-location-config region="default"
-```
+These backups can be restored to the remote k3s instance to ensure functionality, or function as a secondary service instance.
 
-Had to remove `resources:` from the daemonset.
-
-### Change s3 target after install
-```
-kubectl -n velero edit backupstoragelocation default
-```
+## velero
 
 ### Using a local storage storageClass in the target
 
@@ -390,6 +371,9 @@ This is a nice PVC option for simpler backup target setups.
 
 - [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
 - [x] https://external-secrets.io/latest/introduction/getting-started/
+- [ ] upgrade rook https://rook.io/docs/rook/v1.14/Upgrade/rook-upgrade/
+- [ ] rook CSI snapshots https://rook.io/docs/rook/v1.19/Storage-Configuration/Ceph-CSI/ceph-csi-snapshot/
+- [ ] velero CSI snapshots https://velero.io/docs/v1.17/csi/
 - redo backup target
   - [x] argocd + lan ui domain
     - I think about my backup target way less often, IaC would be very helpful for it
@@ -398,9 +382,14 @@ This is a nice PVC option for simpler backup target setups.
   - [ ] external-secrets
   - [ ] weekly restore + validation
 - [ ] redo paperless, with dedicated postgres cluster (applicationset)
-- [ ] upgrade rook
-- [ ] Try https://github.com/dgzlopes/cdk8s-on-argocd
-- [ ] explore metallb failover, or cilium
+- [ ] Use https://github.com/dgzlopes/cdk8s-on-argocd to deduplicate main/backup manifests
+- [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
+  - PreferNoSchedule taint on rook nodes
+- [ ] write up: seedbox setup & sharing the disk w/ NFS
+- [ ] update gogs write up for "next" image
+- [ ] finish this writeup
+- [ ] try https://kubevirt.io/
+- [ ] metallb failover, or cilium?
   - https://metallb.universe.tf/concepts/layer2/
   - https://cilium.io/
    - https://docs.cilium.io/en/latest/network/l2-announcements/
@@ -408,10 +397,4 @@ This is a nice PVC option for simpler backup target setups.
    - https://old.reddit.com/r/kubernetes/comments/11pgmsa/cilium_vs_calico_k3s_what_do_you_use_and_why/
 - [ ] logs
   - https://old.reddit.com/r/kubernetes/comments/y3ze83/lightweight_logging_tool_for_k3s_cluster_with/
-- [ ] explore backup over tailscale
-- [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
-  - PreferNoSchedule taint on rook nodes
-- [ ] write up: seedbox setup & sharing the disk w/ NFS
-- [ ] update gogs write up for "next" image
-- [ ] finish this writeup
-- [ ] try https://kubevirt.io/
+- [ ] backup over tailscale?
