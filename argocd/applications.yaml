@@ -429,7 +429,7 @@ spec:
   project: default
   sources:
   - repoURL: https://charts.rook.io/release
-    targetRevision: '1.13.10'
+    targetRevision: '1.14.12'
     chart: rook-ceph
     helm:
       valueFiles:
@@ -442,7 +442,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     automated:
-      enabled: true
+      enabled: false
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -456,7 +456,7 @@ spec:
   project: default
   sources:
   - repoURL: https://charts.rook.io/release
-    targetRevision: '1.13.10'
+    targetRevision: '1.14.12'
     chart: rook-ceph-cluster
     helm:
       valueFiles:
@@ -472,7 +472,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     automated:
-      enabled: true
+      enabled: false
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
