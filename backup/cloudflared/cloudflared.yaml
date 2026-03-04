@@ -68,3 +68,26 @@ data:
       path: /notifications/hub.*
       service: http://vaultwarden-service.vaultwarden.svc.cluster.local:3012
     - service: http_status:404
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: tunnel-credentials
+  namespace: kube-system
+spec:
+  target:
+    name: tunnel-credentials
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        credentials.json: |-
+          {{ .credentials }}
+  data:
+    - secretKey: credentials
+      sourceRef:
+        storeRef:
+          name: bitwarden-notes
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 4a0b91df-6fcb-4dc1-a0b7-b3f800730cc1
