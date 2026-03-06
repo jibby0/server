@@ -456,7 +456,7 @@ spec:
   project: default
   sources:
   - repoURL: https://charts.rook.io/release
-    targetRevision: '1.14.12'
+    targetRevision: '1.15.9'
     chart: rook-ceph-cluster
     helm:
       valueFiles:
