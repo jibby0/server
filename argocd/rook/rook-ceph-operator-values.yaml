@@ -1,4 +1,4 @@
-# https://github.com/rook/rook/blob/v1.15.9/deploy/charts/rook-ceph/values.yaml
+# https://github.com/rook/rook/blob/v1.16.9/deploy/charts/rook-ceph/values.yaml
 
 csi:
 
@@ -151,49 +151,6 @@ csi:
           cpu: 0
         limits:
           memory: 256Mi
-
-  # -- CEPH CSI NFS provisioner resource requirement list
-  # @default -- see values.yaml
-  csiNFSProvisionerResource: |
-    - name : csi-provisioner
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 100m
-        limits:
-          memory: 256Mi
-    - name : csi-nfsplugin
-      resource:
-        requests:
-          memory: 512Mi
-          cpu: 250m
-        limits:
-          memory: 1Gi
-    - name : csi-attacher
-      resource:
-        requests:
-          memory: 512Mi
-          cpu: 250m
-        limits:
-          memory: 1Gi
-
-  # -- CEPH CSI NFS plugin resource requirement list
-  # @default -- see values.yaml
-  csiNFSPluginResource: |
-    - name : driver-registrar
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 50m
-        limits:
-          memory: 256Mi
-    - name : csi-nfsplugin
-      resource:
-        requests:
-          memory: 512Mi
-          cpu: 250m
-        limits:
-          memory: 1Gi
 
   # Set provisionerTolerations and provisionerNodeAffinity for provisioner pod.
   # The CSI provisioner would be best to start on the same nodes as other ceph daemons.
