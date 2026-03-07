@@ -1,4 +1,4 @@
-# https://github.com/rook/rook/blob/v1.17.9/deploy/charts/rook-ceph/values.yaml
+# https://github.com/rook/rook/blob/v1.18.9/deploy/charts/rook-ceph/values.yaml
 
 csi:
 
