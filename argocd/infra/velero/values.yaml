@@ -80,7 +80,7 @@ configuration:
   #  # annotations allows adding arbitrary annotations to this VolumeSnapshotLocation resource. Optional.
   #  annotations: {}
 
-  defaultVolumesToFsBackup: true
+  defaultVolumesToFsBackup: false
   defaultItemOperationTimeout: 72h
   defaultBackupTTL: 144h
 
