@@ -4,6 +4,9 @@
 #  image:
 #    repository: public.ecr.aws/bitnami/kubectl
 
+image:
+  tag: v1.18.0  # https://github.com/vmware-tanzu/velero/pull/9132
+
 deployNodeAgent: true
 
 initContainers:
