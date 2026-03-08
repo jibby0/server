@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: cloudflared
-  replicas: 3
+  replicas: 0 # TODO configure a different tunnel ID before re-enabling
   template:
     metadata:
       labels:
