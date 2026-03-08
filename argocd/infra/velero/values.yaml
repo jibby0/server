@@ -71,6 +71,12 @@ configuration:
 
   features: EnableCSI
 
+deployNodeAgent: true
+
+nodeAgent:
+  # Disables Host Path volume
+  disableHostPath: true
+
 schedules:
   default:
     disabled: false

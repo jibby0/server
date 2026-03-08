@@ -442,7 +442,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     automated:
-      enabled: false
+      enabled: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -472,7 +472,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     automated:
-      enabled: false
+      enabled: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -587,7 +587,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
     automated:
-      enabled: false
+      enabled: true
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
