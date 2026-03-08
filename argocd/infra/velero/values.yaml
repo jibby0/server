@@ -89,3 +89,4 @@ schedules:
       storageLocation: default
       includedNamespaces:
       - '*'
+      snapshotMoveData: true
