@@ -575,7 +575,7 @@ spec:
   project: default
   sources:
   - repoURL: https://vmware-tanzu.github.io/helm-charts
-    targetRevision: '11.3.2'
+    targetRevision: '11.4.0'
     chart: velero
     helm:
       valueFiles:
@@ -587,7 +587,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
     automated:
-      enabled: true
+      enabled: false
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
