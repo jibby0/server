@@ -606,3 +606,35 @@ spec:
   syncPolicy:
     automated:
       enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-snapshotter-snapshot-crd
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: client/config/crd
+    repoURL: 'https://github.com/kubernetes-csi/external-snapshotter'
+    targetRevision: v8.5.0
+  destination:
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    syncOptions:
+    - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-snapshotter-snapshot-common-controller
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: deploy/kubernetes/snapshot-controller
+    repoURL: 'https://github.com/kubernetes-csi/external-snapshotter'
+    targetRevision: v8.5.0
+  destination:
+    namespace: kube-system
+    server: 'https://kubernetes.default.svc'
