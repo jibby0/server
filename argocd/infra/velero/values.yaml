@@ -1,11 +1,8 @@
 # https://github.com/vmware-tanzu/helm-charts/blob/velero-11.4.0/charts/velero/values.yaml
 
-#kubectl:
-#  image:
-#    repository: public.ecr.aws/bitnami/kubectl
-
-image:
-  tag: v1.18.0  # https://github.com/vmware-tanzu/velero/pull/9132
+kubectl:
+  image:
+    repository: public.ecr.aws/bitnami/kubectl
 
 deployNodeAgent: true
 
@@ -30,7 +27,7 @@ configuration:
     accessMode: ReadWrite
     credential:
       # name of the secret used by this backupStorageLocation.
-      name: velero-aws # TODO
+      name: velero-aws
       # name of key that contains the secret data to be used.
       key: credentials
     # Additional provider-specific configuration. See link above
@@ -61,7 +58,7 @@ configuration:
   - name: default
     provider: "velero.io/aws"
     credential:
-      name: velero-aws # TODO
+      name: velero-aws
       key: credentials
     config:
       s3Url: https://s3.bnuuy.org:8443
