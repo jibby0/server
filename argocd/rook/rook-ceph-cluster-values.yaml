@@ -58,28 +58,32 @@ cephClusterSpec:
           value: "true"
           effect: PreferNoSchedule
 
+  # Ensure osd_memory_target_autotune is true if not limiting mgr & mon memory
   resources:
     mgr:
-      limits:
-        cpu: 0
-        memory: "3Gi"
       requests:
         cpu: 0
-        memory: "512Mi"
+        memory: 0
+      limits:
+        cpu: 0
+        memory: 0
     mon:
-      limits:
-        cpu: 0
-        memory: "1Gi"
       requests:
         cpu: 0
-        memory: "500Mi"
+        memory: 0
+      limits:
+        cpu: 0
+        memory: 0
     osd:
-      limits:
-        cpu: 0
-        memory: "3Gi"
       requests:
         cpu: 0
-        memory: "1Gi"
+        memory: 0
+      limits:
+        cpu: 0
+        # Ensure osd_memory_target reflects this
+        # https://docs.ceph.com/en/latest/start/hardware-recommendations/#ram
+        # memory: "3Gi"
+        memory: "4Gi"
     prepareosd:
       # limits: It is not recommended to set limits on the OSD prepare job
       #         since it's a one-time burst for memory that must be allowed to
