@@ -1,4 +1,10 @@
 # From https://raw.githubusercontent.com/rook/rook/v1.18.9/deploy/charts/rook-ceph-cluster/values.yaml
+
+# -- Cluster ceph.conf override
+configOverride: |
+  [global]
+  osd_recovery_max_active = 4
+
 # Installs a debugging toolbox deployment
 toolbox:
   # -- Enable Ceph debugging pod deployment. See [toolbox](../Troubleshooting/ceph-toolbox.md)
