@@ -3,7 +3,7 @@
 # -- Cluster ceph.conf override
 configOverride: |
   [global]
-  osd_recovery_max_active = 4
+  osd_recovery_max_active = 3
 
 # Installs a debugging toolbox deployment
 toolbox:
