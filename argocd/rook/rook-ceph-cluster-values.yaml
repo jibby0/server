@@ -54,10 +54,10 @@ cephClusterSpec:
         #        values:
         #        - "true"
         preferredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-              - key: storage-node
-                operator: DoesNotExist
+          preference:
+            matchExpressions:
+            - key: storage-node
+              operator: DoesNotExist
       tolerations:
         - key: storage-node
           operator: Equal
