@@ -79,8 +79,8 @@ nodeAgent:
 
 schedules:
   default:
-    disabled: false
-    paused: false
+    disabled: true
+    paused: true
     schedule: "0 2 * * *"
     useOwnerReferencesInBackup: false
     skipImmediately: false
