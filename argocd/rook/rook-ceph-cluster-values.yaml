@@ -44,34 +44,33 @@ cephClusterSpec:
   # tolerate taints with a key of 'storage-node'.
   placement:
     all:
+      # TODO are snapshots easier if mgr/mon/mds run on a compute node?
       nodeAffinity:
-      #  requiredDuringSchedulingIgnoredDuringExecution:
-      #    nodeSelectorTerms:
-      #      - matchExpressions:
-      #        - key: storage-node
-      #          operator: In
-      #          values:
-      #          - "true"
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: storage-node
+                operator: In
+                values:
+                - "true"
       tolerations:
         - key: storage-node
           operator: Equal
           value: "true"
           effect: PreferNoSchedule
 
-  # TODO are snapshots easier if mgr/mon/mds run on a compute node?
-  # Ensure osd_memory_target_autotune is true if not limiting mgr & mon memory
   resources:
     mgr:
       requests:
         cpu: 0
-        memory: 0
+        memory: 3Gi
       limits:
         cpu: 0
         memory: 0
     mon:
       requests:
         cpu: 0
-        memory: 0
+        memory: 1Gi
       limits:
         cpu: 0
         memory: 0
@@ -83,7 +82,6 @@ cephClusterSpec:
         cpu: 0
         # Ensure osd_memory_target reflects this
         # https://docs.ceph.com/en/latest/start/hardware-recommendations/#ram
-        # memory: "3Gi"
         memory: "4Gi"
     prepareosd:
       # limits: It is not recommended to set limits on the OSD prepare job
