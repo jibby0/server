@@ -46,13 +46,18 @@ cephClusterSpec:
     all:
       # TODO are snapshots easier if mgr/mon/mds run on a compute node?
       nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
+        #requiredDuringSchedulingIgnoredDuringExecution:
+        #  nodeSelectorTerms:
+        #    - matchExpressions:
+        #      - key: storage-node
+        #        operator: In
+        #        values:
+        #        - "true"
+        preferredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
             - matchExpressions:
               - key: storage-node
-                operator: In
-                values:
-                - "true"
+                operator: DoesNotExist
       tolerations:
         - key: storage-node
           operator: Equal
