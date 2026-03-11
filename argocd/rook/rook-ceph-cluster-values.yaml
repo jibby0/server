@@ -69,17 +69,17 @@ cephClusterSpec:
     mgr:
       requests:
         cpu: 0
-        memory: 3Gi
+        memory: 0
       limits:
         cpu: 0
-        memory: 0
+        memory: 3Gi
     mon:
       requests:
         cpu: 0
-        memory: 1Gi
+        memory: 0
       limits:
         cpu: 0
-        memory: 0
+        memory: 1Gi
     osd:
       requests:
         cpu: 0
