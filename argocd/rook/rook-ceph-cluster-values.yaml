@@ -45,19 +45,20 @@ cephClusterSpec:
   placement:
     all:
       nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-              - key: storage-node
-                operator: In
-                values:
-                - "true"
+      #  requiredDuringSchedulingIgnoredDuringExecution:
+      #    nodeSelectorTerms:
+      #      - matchExpressions:
+      #        - key: storage-node
+      #          operator: In
+      #          values:
+      #          - "true"
       tolerations:
         - key: storage-node
           operator: Equal
           value: "true"
           effect: PreferNoSchedule
 
+  # TODO are snapshots easier if mgr/mon/mds run on a compute node?
   # Ensure osd_memory_target_autotune is true if not limiting mgr & mon memory
   resources:
     mgr:
