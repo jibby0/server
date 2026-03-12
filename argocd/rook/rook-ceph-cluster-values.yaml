@@ -141,7 +141,7 @@ cephClusterSpec:
   # https://github.com/rook/rook/blob/f244f47eeacc42c4e755b9bf21e88e0431ba4cac/Documentation/CRDs/Cluster/ceph-cluster-crd.md#ceph-config
   cephConfig:
     "osd.*":
-      osd_memory_target_autotune: "true"
+      osd_memory_target_autotune: "false" # "true" is causing OSD pod OOMs
 
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
