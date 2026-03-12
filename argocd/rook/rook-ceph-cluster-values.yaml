@@ -152,8 +152,10 @@ cephClusterSpec:
       # No more waiting on a random 15% chance to deep-scrub, just deep-scrub.
       osd_deep_scrub_interval: "2419200" # 28 days
     "osd.*":
-      osd_memory_target_autotune: "false" # "true" is causing OSD pod OOMs
-      osd_memory_target: "4194967296" # 4GiB - 100MiB
+      osd_memory_target_autotune: "false"
+      osd_memory_target: "4294967296"
+
+      osd_scrub_disable_reservation_queuing: "true" # trying to help with OOMs https://tracker.ceph.com/issues/69078
 
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
