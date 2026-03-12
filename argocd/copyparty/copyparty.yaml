@@ -38,7 +38,7 @@ spec:
           requests:
             memory: "0"
           limits:
-            memory: "1Gi"
+            memory: "3Gi"
       volumes:
       - name: copyparty
         persistentVolumeClaim:
