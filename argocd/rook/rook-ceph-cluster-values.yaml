@@ -45,7 +45,7 @@ cephClusterSpec:
   placement:
     all:
       nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution: {}
+        #requiredDuringSchedulingIgnoredDuringExecution:
         #  nodeSelectorTerms:
         #    - matchExpressions:
         #      - key: storage-node
