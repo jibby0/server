@@ -153,6 +153,7 @@ cephClusterSpec:
       osd_deep_scrub_interval: "2419200" # 28 days
     "osd.*":
       osd_memory_target_autotune: "false" # "true" is causing OSD pod OOMs
+      osd_memory_target: "4254967296" # 4GiB - 50MiB
 
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
