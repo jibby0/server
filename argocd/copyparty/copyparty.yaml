@@ -97,24 +97,24 @@ data:
       accs:
         A: josh
       flags:
-        noidx
-        nohash
-        e2ds
-        lifetime: 604800  # 1wk
-        daw
         nohash: .*
+        noidx: .*
+        e2ds
+        daw
         dthumb
+        lifetime: 604800  # 1wk
 
     [/priv/Archive/SMS]
       /w/priv/Archive/SMS
       accs:
         A: josh
       flags:
-        noidx
-        nohash
-        lifetime: 7257600  # 3mo
+        noidx: .*
+        nohash: .*
+        e2ds
         daw
         dthumb
+        lifetime: 7257600  # 3mo
 
     [/writes]
       /w/writes
