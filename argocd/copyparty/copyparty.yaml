@@ -99,7 +99,6 @@ data:
       flags:
         nohash: .*
         noidx: .*
-        e2ds
         daw
         dthumb
         lifetime: 604800  # 1wk
@@ -111,7 +110,6 @@ data:
       flags:
         noidx: .*
         nohash: .*
-        e2ds
         daw
         dthumb
         lifetime: 7257600  # 3mo
