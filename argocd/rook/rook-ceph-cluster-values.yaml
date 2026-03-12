@@ -153,7 +153,8 @@ cephClusterSpec:
       osd_deep_scrub_interval: "2419200" # 28 days
     "osd.*":
       osd_memory_target_autotune: "false"
-      osd_memory_target: "4294967296"
+      #osd_memory_target: "4294967296" # 4Gi
+      osd_memory_target: "4026531840"  # 3.75Gi
 
       osd_scrub_disable_reservation_queuing: "true" # trying to help with OOMs https://tracker.ceph.com/issues/69078
 
