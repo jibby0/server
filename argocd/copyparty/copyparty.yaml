@@ -101,7 +101,7 @@ data:
         lifetime: 604800  # 1wk
         daw
         nohash: .*
-        no-thumb
+        dthumb
 
     [/priv/Archive/SMS]
       /w/priv/Archive/SMS
@@ -110,7 +110,7 @@ data:
       flags:
         lifetime: 7257600  # 3mo
         daw
-        no-thumb
+        dthumb
 
     [/writes]
       /w/writes
@@ -120,7 +120,7 @@ data:
       flags:
         lifetime: 604800  # 1wk
         xz: 0
-        no-thumb
+        dthumb
 
 ---
 apiVersion: v1
