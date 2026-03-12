@@ -140,6 +140,17 @@ cephClusterSpec:
 
   # https://github.com/rook/rook/blob/f244f47eeacc42c4e755b9bf21e88e0431ba4cac/Documentation/CRDs/Cluster/ceph-cluster-crd.md#ceph-config
   cephConfig:
+    global:
+      # https://silvenga.com/posts/ceph-and-deep-scrubs/
+      # Schedule the next normal scrub in between 1-7 days.
+      osd_scrub_min_interval: "86400" # 1 day
+      osd_scrub_interval_randomize_ratio: "7" # 700%
+
+      # No more delays, normal scrub after 14 days.
+      osd_scrub_max_interval: "1209600" # 14 days
+
+      # No more waiting on a random 15% chance to deep-scrub, just deep-scrub.
+      osd_deep_scrub_interval: "2419200" # 28 days
     "osd.*":
       osd_memory_target_autotune: "false" # "true" is causing OSD pod OOMs
 
