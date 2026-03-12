@@ -1,9 +1,5 @@
 # From https://raw.githubusercontent.com/rook/rook/v1.18.9/deploy/charts/rook-ceph-cluster/values.yaml
 
-configOverride: |
-  [osd]
-  osd_memory_target_autotune = true
-
 # Installs a debugging toolbox deployment
 toolbox:
   # -- Enable Ceph debugging pod deployment. See [toolbox](../Troubleshooting/ceph-toolbox.md)
@@ -141,6 +137,11 @@ cephClusterSpec:
       requests:
         cpu: 0
         memory: "50Mi"
+
+          # https://github.com/rook/rook/blob/f244f47eeacc42c4e755b9bf21e88e0431ba4cac/Documentation/CRDs/Cluster/ceph-cluster-crd.md#ceph-config
+    cephConfig:
+      "osd.*":
+        osd_memory_target_autotune: true
 
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
