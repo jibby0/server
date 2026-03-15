@@ -371,23 +371,25 @@ This is a nice PVC option for simpler backup target setups.
 
 - [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
 - [x] https://external-secrets.io/latest/introduction/getting-started/
-- [ ] upgrade rook https://rook.io/docs/rook/v1.14/Upgrade/rook-upgrade/
-- [ ] rook CSI snapshots https://rook.io/docs/rook/v1.19/Storage-Configuration/Ceph-CSI/ceph-csi-snapshot/
+- [x] upgrade rook https://rook.io/docs/rook/v1.14/Upgrade/rook-upgrade/
+- [x] rook CSI snapshots https://rook.io/docs/rook/v1.19/Storage-Configuration/Ceph-CSI/ceph-csi-snapshot/
 - [ ] velero CSI snapshots https://velero.io/docs/v1.17/csi/
+  - [ ] Way to use cephfs shallow snapshots in velero: https://github.com/ceph/ceph-csi/blob/devel/docs/design/proposals/cephfs-snapshot-shallow-ro-vol.md
 - redo backup target
   - [x] argocd + lan ui domain
     - I think about my backup target way less often, IaC would be very helpful for it
   - [x] single host ceph
     - removes openebs & minio requirement, plus self-healing
-  - [ ] external-secrets
+  - [x] external-secrets
   - [ ] weekly restore + validation
 - [ ] redo paperless, with dedicated postgres cluster (applicationset)
+  - https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md
+  - look at paperless-ai
 - [ ] Use https://github.com/dgzlopes/cdk8s-on-argocd to deduplicate main/backup manifests
 - [ ] write up: node affinity + eviction, how i limit non-rook pods running on rook nodes
   - PreferNoSchedule taint on rook nodes
 - [ ] write up: seedbox setup & sharing the disk w/ NFS
-- [ ] update gogs write up for "next" image
-- [ ] finish this writeup
+- [ ] finish this writeup + blog post
 - [ ] try https://kubevirt.io/
 - [ ] metallb failover, or cilium?
   - https://metallb.universe.tf/concepts/layer2/
