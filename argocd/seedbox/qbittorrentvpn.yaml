@@ -29,7 +29,7 @@ spec:
                 - "true"
       containers:
       - name: qbittorrentvpn
-        image: binhex/arch-qbittorrentvpn:5.1.4-1-01
+        image: binhex/arch-qbittorrentvpn:5.1.4-2-01
         ports:
         - containerPort: 8080
           name: http-web-svc
@@ -217,7 +217,7 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
           periodSeconds: 3
-          failureThreshold: 15
+          failureThreshold: 50
         resources:
           requests:
             memory: "0"
