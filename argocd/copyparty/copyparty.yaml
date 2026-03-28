@@ -101,7 +101,6 @@ data:
         noidx: .*
         daw
         dthumb
-        lifetime: 604800  # 1wk
 
     [/priv/Archive/SMS]
       /w/priv/Archive/SMS
