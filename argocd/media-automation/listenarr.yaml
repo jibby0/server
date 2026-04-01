@@ -45,7 +45,7 @@ spec:
           requests:
             memory: "0"
           limits:
-            memory: "1Gi"
+            memory: "2Gi"
       volumes:
       - name: media
         persistentVolumeClaim:
