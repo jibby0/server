@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listenarr
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: listenarr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: listenarr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: plex,seedbox
+    spec:
+      containers:
+      - name: listenarr
+        image: ghcr.io/listenarrs/listenarr:canary
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4545
+          name: http-web-svc
+        env:
+        - name: TZ
+          value: America/New_York
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        volumeMounts:
+        - mountPath: /audiobooks
+          name: media
+          subPath: Audiobooks
+        - mountPath: /scratch
+          name: seedbox
+          subPath: audiobooks
+        - mountPath: /app/config
+          name: config
+        resources:
+          requests:
+            memory: "0"
+          limits:
+            memory: "1Gi"
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: plex-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: listenarr-pvc
+      - name: seedbox
+        nfs:
+          server: 172.16.69.253
+          path: /seedbox/torrents
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: listenarr-service
+  namespace: plex
+spec:
+  selector:
+    app: listenarr
+  type: ClusterIP
+  ports:
+  - name: listenarr-web-port
+    protocol: TCP
+    port: 4545
+    targetPort: http-web-svc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: listenarr
+  namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-lanonly@kubernetescrd
+spec:
+  rules:
+    - host: listenarr.lan.jibby.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: listenarr-service
+                port:
+                  number: 4545

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: listenarr-pvc
+  namespace: plex
+  labels:
+    app: listenarr
+spec:
+  storageClassName: ceph-block-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
