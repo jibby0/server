@@ -43,7 +43,7 @@ spec:
           requests:
             memory: "0"
           limits:
-            memory: "2Gi"
+            memory: "3Gi"
       volumes:
       - name: plex
         persistentVolumeClaim:
