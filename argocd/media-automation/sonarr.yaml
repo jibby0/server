@@ -39,11 +39,6 @@ spec:
           name: config
         - mountPath: "/scratch"
           name: seedbox
-        resources:
-          requests:
-            memory: "0"
-          limits:
-            memory: "3Gi"
       volumes:
       - name: plex
         persistentVolumeClaim:
