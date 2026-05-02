@@ -213,7 +213,7 @@ spec:
             command:
             - "/bin/sh"
             - "-c"
-            - 'wget -O - 0.0.0.0:8000 | grep -E "qbittorrent_up"'
+            - 'wget -O - 0.0.0.0:8000 | grep -E "qbittorrent_up\{.* 1.0"'
           initialDelaySeconds: 3
           timeoutSeconds: 5
           periodSeconds: 3
