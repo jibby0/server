@@ -45,21 +45,21 @@ cephClusterSpec:
   placement:
     all:
       nodeAffinity:
-        #requiredDuringSchedulingIgnoredDuringExecution:
-        #  nodeSelectorTerms:
-        #    - matchExpressions:
-        #      - key: storage-node
-        #        operator: In
-        #        values:
-        #        - "true"
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: storage-node
+                operator: In
+                values:
+                - "true"
         # TODO are snapshots easier if mgr/mon/mds run on a compute node?
         # TODO does running on a compute node change cephfs mounting? I think it requires mon's port 6789
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 1
-          preference:
-            matchExpressions:
-              - key: storage-node
-                operator: DoesNotExist
+        #preferredDuringSchedulingIgnoredDuringExecution:
+        #- weight: 1
+        #  preference:
+        #    matchExpressions:
+        #      - key: storage-node
+        #        operator: DoesNotExist
       tolerations:
         - key: storage-node
           operator: Equal
