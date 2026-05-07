@@ -39,11 +39,6 @@ spec:
           name: seedbox
         - mountPath: "/config"
           name: config
-        resources:
-          requests:
-            memory: "0"
-          limits:
-            memory: "1Gi"
       volumes:
       - name: plex
         persistentVolumeClaim:
