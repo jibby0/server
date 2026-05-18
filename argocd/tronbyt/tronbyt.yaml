@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: tronbyt
-        image: ghcr.io/tronbyt/server:latest
+        image: ghcr.io/tronbyt/server:2.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
