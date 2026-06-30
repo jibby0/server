@@ -66,9 +66,9 @@ spec:
             secretKeyRef:
               name: qbittorrentvpn
               key: VPN_PASS
-        livenessProbe:
-          exec:
-            command: ["curl", "--fail", "localhost:8080"]
+        #livenessProbe:
+        #  exec:
+        #    command: ["curl", "--fail", "localhost:8080"]
         volumeMounts:
         - mountPath: "/media"
           name: media
