@@ -432,9 +432,7 @@ spec:
       remoteRef:
         key: 54c175aa-aa4f-4a28-a8f6-b3f80146e440
 
-# Disabled for now (see suspend: true)
-#  Sometimes VPN throughput slows down & a restart helps. Other times a restart
-#  slows things down.
+# Currently the pod restart loops after a while without a pod deletion.
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -442,7 +440,7 @@ metadata:
   name: qbittorrentvpn-restart
   namespace: plex
 spec:
-  suspend: true
+  suspend: false
   schedule: "*/30 * * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
@@ -476,7 +474,7 @@ spec:
                 # Vars to configure
                 namespace = 'plex'
                 qparams = {'labelSelector': 'app=qbittorrentvpn'}
-                max_runtime = datetime.timedelta(days=3)
+                max_runtime = datetime.timedelta(days=2)
 
                 # serviceaccount/k8s specific vars. Likely don't need to edit these.
                 serviceaccount_dir = '/var/run/secrets/kubernetes.io/serviceaccount'
