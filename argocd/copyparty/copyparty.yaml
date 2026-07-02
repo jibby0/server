@@ -34,11 +34,6 @@ spec:
         - name: config-default
           mountPath: /cfg/default.conf
           subPath: default.conf
-        resources:
-          requests:
-            memory: "0"
-          limits:
-            memory: "3Gi"
       volumes:
       - name: copyparty
         persistentVolumeClaim:
