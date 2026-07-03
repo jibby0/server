@@ -237,7 +237,7 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: copyparty
+    namespace: plex
     server: https://kubernetes.default.svc
   project: default
   source:
