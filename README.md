@@ -367,6 +367,12 @@ KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install openebs --namespace openebs op
 
 This is a nice PVC option for simpler backup target setups.
 
+# proxmox networking issues
+
+Using docker on a proxmox host can break LXC & VM networking.
+
+https://forum.proxmox.com/threads/proxmox-vm-networking-is-bust-after-restart.166637/post-773461
+
 # TODO
 
 - [X] move to https://argo-workflows.readthedocs.io/en/latest/quick-start/
@@ -375,6 +381,7 @@ This is a nice PVC option for simpler backup target setups.
 - [x] rook CSI snapshots https://rook.io/docs/rook/v1.19/Storage-Configuration/Ceph-CSI/ceph-csi-snapshot/
 - [ ] velero CSI snapshots https://velero.io/docs/v1.17/csi/
   - [ ] Way to use cephfs shallow snapshots in velero: https://github.com/ceph/ceph-csi/blob/devel/docs/design/proposals/cephfs-snapshot-shallow-ro-vol.md
+    Alternatively: ensure cephfs vols aren't included, & just let duplicati handle it.
 - redo backup target
   - [x] argocd + lan ui domain
     - I think about my backup target way less often, IaC would be very helpful for it
