@@ -13,6 +13,7 @@ spec:
   # the pool name created in Ceph with this name property.
   name: .mgr
   failureDomain: osd
+  deviceClass: hdd
   replicated:
     size: 3
     requireSafeReplicaSize: true

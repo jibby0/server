@@ -91,6 +91,7 @@ cephBlockPools:
   - name: ceph-blockpool
     spec:
       failureDomain: osd
+      deviceClass: hdd
       erasureCoded:
         dataChunks: 2
         codingChunks: 1
@@ -118,10 +119,12 @@ cephObjectStores:
     spec:
       metadataPool:
         failureDomain: osd
+        deviceClass: hdd
         replicated:
           size: 3
       dataPool:
         failureDomain: osd
+        deviceClass: hdd
         erasureCoded:
           dataChunks: 2
           codingChunks: 1

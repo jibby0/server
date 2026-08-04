@@ -53,8 +53,10 @@ spec:
     automated:
       enabled: true
 ---
-# If rook ever needs a full re-provisioning, the operator must complete before
-# the cluster deployment starts.
+# Should rook ever need full re-provisioning, applications must be deployed in this order:
+#  - operator
+#  - manifests (to configure the .mgr pool)
+#  - cluster
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -85,6 +87,25 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: rook-manifest
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: backup/rook-manifest
+    repoURL: https://gogs.jibby.org/jhb2345/server
+    targetRevision: HEAD
+    directory:
+      recurse: true
+  syncPolicy:
+    automated:
+      enabled: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: rook-ceph-cluster
   namespace: argocd
 spec:
@@ -109,25 +130,6 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-    automated:
-      enabled: true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: rook-manifest
-  namespace: argocd
-spec:
-  destination:
-    server: https://kubernetes.default.svc
-  project: default
-  source:
-    path: backup/rook-manifest
-    repoURL: https://gogs.jibby.org/jhb2345/server
-    targetRevision: HEAD
-    directory:
-      recurse: true
-  syncPolicy:
     automated:
       enabled: true
 ---
