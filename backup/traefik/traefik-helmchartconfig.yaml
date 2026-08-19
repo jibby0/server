@@ -7,13 +7,13 @@ spec:
   valuesContent: |-
     ports:
       web:
-        exposedPort: 8080
+        exposedPort: 8081
       websecure:
-        exposedPort: 8443
+        exposedPort: 8444
 
     additionalArguments:
       - "--entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,10.0.0.0/24"
-      - "--entrypoints.web.http.redirections.entryPoint.to=:8443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=:8444"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.transport.respondingTimeouts.readTimeout=0s"
 
