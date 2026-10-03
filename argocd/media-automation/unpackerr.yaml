@@ -1,0 +1,102 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: plex
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: unpackerr
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: unpackerr
+      annotations:
+        backup.velero.io/backup-volumes-excludes: seedbox
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: unpackerr
+        image: golift/unpackerr
+        imagePullPolicy: Always
+        env:
+        - name: TZ
+          value: America/New_York
+        - name: UN_SONARR_0_URL
+          value: "https://sonarr.lan.jibby.org"
+        - name: UN_SONARR_0_API_KEY
+          valueFrom:
+              secretKeyRef:
+                  name: sonarr-api-key
+                  key: apikey
+                  optional: false
+        - name: UN_RADARR_0_URL
+          value: "https://radarr.lan.jibby.org"
+        - name: UN_RADARR_0_API_KEY
+          valueFrom:
+              secretKeyRef:
+                  name: radarr-api-key
+                  key: apikey
+                  optional: false
+        volumeMounts:
+        - mountPath: "/scratch"
+          name: seedbox
+      volumes:
+      - name: seedbox
+        nfs:
+          server: 172.16.69.253
+          path: /seedbox/torrents
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: radarr-api-key
+  namespace: plex
+spec:
+  target:
+    name: radarr-api-key
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        apikey: |-
+          {{ .apikey }}
+  data:
+    - secretKey: apikey
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 48041e19-ff1a-434e-8a90-b4a8016dd9b2
+        property: password
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: sonarr-api-key
+  namespace: plex
+spec:
+  target:
+    name: sonarr-api-key
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        apikey: |-
+          {{ .apikey }}
+  data:
+    - secretKey: apikey
+      sourceRef:
+        storeRef:
+          name: bitwarden-login
+          kind: ClusterSecretStore
+      remoteRef:
+        key: 1f99e093-df53-44dc-8a1c-b4a8016b47c6
+        property: password
